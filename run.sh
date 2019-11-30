@@ -1,5 +1,6 @@
 # Activate the virtual env
 source .env/bin/activate
+module load prun
 
 # Start Elasticsearch server
 ES_PORT=9200

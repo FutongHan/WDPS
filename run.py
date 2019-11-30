@@ -1,6 +1,7 @@
 import sys
 import gzip
 import os
+import requests
 from bs4 import BeautifulSoup, Comment
 import spacy
 # from elasticsearch import search
@@ -77,6 +78,23 @@ def html2text(record):
 
         return text
     return ""
+	
+##### ENTITY GENERATION #####	
+def generate_entities(domain, query, size):
+    url = 'http://%s/freebase/label/_search' % domain
+    response = requests.get(url, params={'q': query, 'size': size})
+    id_labels = []
+    if response:
+        response = response.json()
+        for hit in response.get('hits', {}).get('hits', []):
+
+            freebase_label = hit.get('_source', {}).get('label')
+            freebase_id = hit.get('_source', {}).get('resource')
+            freebase_score = hit.get('_score', {})
+			
+            id_labels.append( (freebase_id, freebase_label, freebase_score) )
+           
+    return id_labels  
 
 
 ##### ENTITY LINKING #####
@@ -105,12 +123,16 @@ def run(DOMAIN):
 
             # SpaCy
             doc = nlp(html)
-            print([(X.text, X.label_) for X in doc.ents])
+			
+			for X in doc.ents:
+				print( (X.text, X.label_) )
+				print(generate_entities(DOMAIN, X.text, 1)
 
 
         # for X in doc.ents:
         #     entities = search_candidate(X.text, DOMAIN)
         #     print(entities)
+		
 if __name__ == '__main__':
     try:
         _, DOMAIN = sys.argv
