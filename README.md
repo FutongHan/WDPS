@@ -2,7 +2,7 @@
 
 1) Log in on DAS4
 
-2) $cd test
+2) $cd WDPS2019
 
 3) $source .env/bin/activate
 
