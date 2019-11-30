@@ -2,19 +2,17 @@ import requests
 
 def search(domain, query):
     url = 'http://%s/freebase/label/_search' % domain
-    response = requests.get(url, params={'q': query, 'size': 100})
-    id_labels = {}
+    response = requests.get(url, params={'q': query, 'size': 1})
+    id_labels = []
     if response:
         response = response.json()
         for hit in response.get('hits', {}).get('hits', []):
+
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
-            freebase_score = hit.get('_source', {}).get('score')
-            freebase_type = hit.get('_source', {}).get('type')
+            freebase_score = hit.get('_score', {})
 			
-			combination = freebase_label + freebase_id + freebase_score + freebase_type
-			
-            id_labels.setdefault(freebase_id, set()).add( combination )
+            id_labels.append( (freebase_id, freebase_label) )
 
 if __name__ == '__main__':
     import sys
@@ -24,5 +22,4 @@ if __name__ == '__main__':
         print('Usage: python elasticsearch.py DOMAIN QUERY')
         sys.exit(0)
 
-    for entity, labels in search(DOMAIN, QUERY).items():
-        print(entity, labels)
+    print(search(DOMAIN, QUERY))
