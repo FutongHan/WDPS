@@ -12,6 +12,7 @@ def search(domain, query):
             freebase_score = hit.get('_score', {})
             freebase_type = hit.get('_type', {})
 
+            print(hit)
             print(freebase_score)
             print(freebase_type)
 			
