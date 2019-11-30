@@ -106,10 +106,16 @@ def run(DOMAIN):
             # SpaCy
             doc = nlp(html)
 
-            for X in doc.ents:
-                entities = search_candidate(X.text, DOMAIN)
+            print([(X.text, X.label_) for X in doc.ents])
 
-                print(entities)
+
+
+
+
+            # for X in doc.ents:
+            #     entities = search_candidate(X.text, DOMAIN)
+
+            #     print(entities)
 
 
 if __name__ == '__main__':
