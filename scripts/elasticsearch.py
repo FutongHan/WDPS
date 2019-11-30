@@ -10,12 +10,12 @@ def search(domain, query):
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score')
-			freebase_type = hit.get('type')
+            freebase_type = hit.get('type')
 			
             freebase_number_of_facts = 0
             freebase_match = 0
             freebase_similarity = 0
-            id_labels.setdefault(freebase_id, set()).add( freebase_label ).add( freebase_type).add(freebase_score).add(freebase_number_of_facts).add(freebase_match).add(freebase_similarity)
+            id_labels.setdefault(freebase_id, set()).add(freebase_label).add(freebase_type).add(freebase_score).add(freebase_number_of_facts).add(freebase_match).add(freebase_similarity)
 
 if _name_ == '_main_':
     import sys
