@@ -1,8 +1,8 @@
 import requests
 
-def search(domain, query):
+def search(domain, query, size):
     url = 'http://%s/freebase/label/_search' % domain
-    response = requests.get(url, params={'q': query, 'size': 1})
+    response = requests.get(url, params={'q': query, 'size': size})
     id_labels = []
     if response:
         response = response.json()
@@ -12,14 +12,16 @@ def search(domain, query):
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score', {})
 			
-            id_labels.append( (freebase_id, freebase_label) )
+            id_labels.append( (freebase_id, freebase_label, freebase_score) )
+           
+    return id_labels  
 
 if __name__ == '__main__':
     import sys
     try:
-        _, DOMAIN, QUERY = sys.argv
+        _, DOMAIN, QUERY, SIZE = sys.argv
     except Exception as e:
-        print('Usage: python elasticsearch.py DOMAIN QUERY')
+        print('Usage: python elasticsearch.py DOMAIN QUERY SIZE')
         sys.exit(0)
 
-    print(search(DOMAIN, QUERY))
+    print(search(DOMAIN, QUERY, SIZE))

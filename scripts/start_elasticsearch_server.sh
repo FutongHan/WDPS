@@ -1,5 +1,5 @@
 ES_PORT=9200
-ES_BIN=/home/jurbani/wdps/elasticsearch-2.4.1/bin/elasticsearch
+ES_BIN=/home/wdps1911/prof/wdps/elasticsearch-2.4.1/bin/elasticsearch
 
 >.es_log*
 prun -o .es_log -v -np 1 ESPORT=$ES_PORT $ES_BIN </dev/null 2> .es_node &
