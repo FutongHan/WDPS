@@ -8,7 +8,3 @@ until [ -n "$ES_NODE" ]; do ES_NODE=$(cat .es_node | grep '^:' | grep -oP '(node
 ES_PID=$!
 until [ -n "$(cat .es_log* | grep YELLOW)" ]; do sleep 1; done
 echo "elasticsearch should be running now on node $ES_NODE:$ES_PORT (connected to process $ES_PID)"
-
-python3 elasticsearch.py $ES_NODE:$ES_PORT "Vrije Universiteit Amsterdam"
-
-kill $ES_PID
