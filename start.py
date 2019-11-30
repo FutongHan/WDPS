@@ -3,8 +3,12 @@ import gzip
 import os
 from bs4 import BeautifulSoup, Comment
 import spacy
+from elasticsearch import search
+
 
 nlp = spacy.load("en_core_web_sm")
+
+""" HTML Processing """
 
 
 def split_records(stream):
@@ -75,6 +79,20 @@ def html2text(record):
     return ""
 
 
+""" Entity Linking """
+
+
+def search_candidate(token, DOMAIN):
+    entity_dict = {}
+    entities = None
+    if entity_dict.__contains__(token):
+        entities = entity_dict[token]
+    else:
+        entities = search(DOMAIN, token).items()
+        entity_dict[token] = entities
+    return entities
+
+
 def run(DOMAIN):
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
@@ -87,7 +105,11 @@ def run(DOMAIN):
 
             # SpaCy
             doc = nlp(html)
-            print([(X.text, X.label_) for X in doc.ents])
+
+            for X in doc.ents:
+                entities = search_candidate(X.text, DOMAIN)
+
+                print(entities)
 
 
 if __name__ == '__main__':
