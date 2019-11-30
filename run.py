@@ -124,9 +124,9 @@ def run(DOMAIN):
             # SpaCy
             doc = nlp(html)
 			
-			for X in doc.ents:
-				print( (X.text, X.label_) )
-				print(generate_entities(DOMAIN, X.text, 1)
+            for X in doc.ents:
+                print( (X.text, X.label_) )
+                print(generate_entities(DOMAIN, X.text, 1))
 
 
         # for X in doc.ents:
