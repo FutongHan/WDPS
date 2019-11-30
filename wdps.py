@@ -1,6 +1,7 @@
 import gzip
 from bs4 import BeautifulSoup, Comment
 import spacy
+import os
 # nlp = en_core_web_sm.load()
 
 nlp = spacy.load("en_core_web_sm")
