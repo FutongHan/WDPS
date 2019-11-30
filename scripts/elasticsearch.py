@@ -9,13 +9,12 @@ def search(domain, query):
         for hit in response.get('hits', {}).get('hits', []):
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
-            freebase_score = hit.get('_score')
-            freebase_type = hit.get('type')
+            freebase_score = hit.get('_source', {}).get('score')
+            freebase_type = hit.get('_source', {}).get('type')
 			
-            freebase_number_of_facts = 0
-            freebase_match = 0
-            freebase_similarity = 0
-            id_labels.setdefault(freebase_id, set().add(freebase_label).add(freebase_type).add(freebase_score).add(freebase_number_of_facts).add(freebase_match).add(freebase_similarity))
+			combination = freebase_label + freebase_id + freebase_score + freebase_type
+			
+            id_labels.setdefault(freebase_id, set()).add( combination )
 
 if __name__ == '__main__':
     import sys
