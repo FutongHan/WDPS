@@ -3,12 +3,12 @@ import gzip
 import os
 from bs4 import BeautifulSoup, Comment
 import spacy
-from elasticsearch import search
+# from elasticsearch import search
 
 
 nlp = spacy.load("en_core_web_sm")
 
-""" HTML Processing """
+##### HTML PROCESSING #####
 
 
 def split_records(stream):
@@ -79,45 +79,38 @@ def html2text(record):
     return ""
 
 
-""" Entity Linking """
+##### ENTITY LINKING #####
+# def search_candidate(token, DOMAIN):
+#     entity_dict = {}
+#     entities = None
+#     if entity_dict.__contains__(token):
+#         entities = entity_dict[token]
+#     else:
+#         entities = search(DOMAIN, token).items()
+#         entity_dict[token] = entities
+#     return entities
 
 
-def search_candidate(token, DOMAIN):
-    entity_dict = {}
-    entities = None
-    if entity_dict.__contains__(token):
-        entities = entity_dict[token]
-    else:
-        entities = search(DOMAIN, token).items()
-        entity_dict[token] = entities
-    return entities
-
-
+##### MAIN PROGRAM #####
 def run(DOMAIN):
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
     for record in split_records(warcfile):
-        key = find_key(record)
+        key = find_key(record) # The filename we need to output
+
         if key != '':
             # HTML processing
             html = html2text(record)
 
             # SpaCy
             doc = nlp(html)
-
             print([(X.text, X.label_) for X in doc.ents])
 
 
-
-
-
-            # for X in doc.ents:
-            #     entities = search_candidate(X.text, DOMAIN)
-
-            #     print(entities)
-
-
+        # for X in doc.ents:
+        #     entities = search_candidate(X.text, DOMAIN)
+        #     print(entities)
 if __name__ == '__main__':
     try:
         _, DOMAIN = sys.argv
