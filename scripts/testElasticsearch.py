@@ -10,8 +10,10 @@ def search(domain, query):
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score', {})
+            freebase_type = hit.get('_type', {})
 
             print(freebase_score)
+            print(freebase_type)
 			
             # id_labels.setdefault(freebase_id, set()).add( combination )
 
