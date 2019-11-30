@@ -17,7 +17,7 @@ def search(domain, query):
             freebase_similarity = 0
             id_labels.setdefault(freebase_id, set()).add(freebase_label).add(freebase_type).add(freebase_score).add(freebase_number_of_facts).add(freebase_match).add(freebase_similarity)
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     import sys
     try:
         _, DOMAIN, QUERY = sys.argv
