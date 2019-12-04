@@ -155,6 +155,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
             for entity in doc.ents:
                 label = entity.label_
                 name = entity.text
+                
+                print(name,label)
         
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
@@ -180,6 +182,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
 
 
                     if(candidates[i][1] < score_margin):
+                        print("no match")
                         break
                     
                     if(abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
@@ -190,7 +193,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                                 print(name,label,candidates[i])
                                 break
                             # Query the candidate
-                            freebaseID = candidate[j][2].replace("/",".")
+                            freebaseID = candidates[j][2].replace("/",".")
                             query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
                             if(sparql(DOMAIN_KB, query, label)):
                                 print(name,label,candidates[j])
