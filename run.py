@@ -142,7 +142,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
       
                 # Query in KB
                 for candidate in candidates:
-                    print(candidates[2])
+                    print(candidate[2])
                 #     query = "select * where {<http://rdf.freebase.com/ns%s> ?p ?o} limit 100" % candidate[2]
                 #     sparql(DOMAIN_KB, query)
 
