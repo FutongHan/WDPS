@@ -132,11 +132,16 @@ def run(DOMAIN_ES, DOMAIN_KB):
             """ 3) Entity Linking """
             for entity in doc.ents:
                 label = entity.label_
+				
+				if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
+					continue
 
                 # Candidate generation using Elasticsearch
                 nr_of_candidates = 100
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
+				
+				
                 
                 # No candidates, skip to next doc
                 if not candidates:
@@ -144,14 +149,14 @@ def run(DOMAIN_ES, DOMAIN_KB):
       
                 # Query in KB
                 for candidate in candidates:
-                    print(candidate)
+                    print(candidate,label)
                     # Query the candidate
                     freebaseID = candidate[2][1:].replace("/",".")
                     query = "select * where {<http://rdf.freebase.com/ns/%s> ?p ?o} limit 100" % freebaseID
                     sparql(DOMAIN_KB, query)
                     break
                     # Check if the candidate's tag/label matches the label given by spaCy
-                    
+                break
 
 
 
