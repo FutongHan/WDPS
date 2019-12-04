@@ -133,8 +133,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
             for entity in doc.ents:
                 label = entity.label_
 				
-				if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
-					continue
+                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
+                    continue
 
                 # Candidate generation using Elasticsearch
                 nr_of_candidates = 100
