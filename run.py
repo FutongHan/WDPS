@@ -5,6 +5,7 @@ import requests
 import json
 from bs4 import BeautifulSoup, Comment
 import spacy
+import math
 nlp = spacy.load("en_core_web_lg")
 
 # from elasticsearch import search
@@ -96,15 +97,39 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
+def is_contained(lis, string):
+    
 
 ##### ENTITY LINKING USING TRIDENT #####
-def sparql(domain, query):
+def sparql(domain, query, label):
     url = 'http://%s/sparql' % domain
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
         try:
             response = response.json()
-            print(json.dumps(response, indent=2))
+            if label == "PERSON" and "people." is in json.dumps(response, indent=2):
+                return true
+            if label == "NORP" and "organisation" is in json.dumps(response, indent=2):
+                return true         
+            if label == "FAC" and "" is in json.dumps(response, indent=2):
+                return true
+            if label == "ORG" and "organisation." is in json.dumps(response, indent=2):
+                return true
+            if label == "GPE" and "location." is in json.dumps(response, indent=2):
+                return true             
+            if label == "LOC" and "location." is in json.dumps(response, indent=2):
+                return true             
+            if label == "PRODUCT" and "" is in json.dumps(response, indent=2):
+                return true             
+            if label == "EVENT" and "event." is in json.dumps(response, indent=2):
+                return true             
+            if label == "WORK_OF_ART" and "" is in json.dumps(response, indent=2):
+                return true
+            if label == "LAW" and "law." is in json.dumps(response, indent=2):
+                return true 
+            if label == "LANGUAGE" and "language." is in json.dumps(response, indent=2):
+                return true         
+            
         except Exception as e:
             # print(response)
             print('error')
@@ -132,7 +157,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
             """ 3) Entity Linking """
             for entity in doc.ents:
                 label = entity.label_
-		
+                name = entity.text
+        
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
 
@@ -140,27 +166,41 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 nr_of_candidates = 100
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
-				
-				
+                                
                 
                 # No candidates, skip to next doc
                 if not candidates:
                     continue
+                    
+                candidate = candidates[0]
+                print(name,label,candidate)
+                
+                score_margin = 5
+                diff_margin = 1
       
                 # Query in KB
-                for candidate in candidates:
-                    print(candidate,label)
-                    # Query the candidate
-                    freebaseID = candidate[2][1:].replace("/",".")
-                    query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
-                    sparql(DOMAIN_KB, query)
+                for i in range(len(candidates) - 1):
+
+
+                    if(candidates[i][1] < score_margin):
+                        break
+                    
+                    if(math.abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
+                        print(name,label,candidates[i])
+                    else:
+                        for j in range(i, len(candidates)):
+                            if(math.abs(candidates[i][1] - candidates[j][1]) > diff_margin):
+                                print(name,label,candidates[i])
+                                break
+                            # Query the candidate
+                            freebaseID = candidate[j][1:].replace("/",".")
+                            query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
+                            if(sparql(DOMAIN_KB, query, label):
+                                print(name,label,candidates[j])
+                                break  
                     break
                     # Check if the candidate's tag/label matches the label given by spaCy
                 break
-
-
-
-                    
 
 
 if __name__ == '__main__':
