@@ -105,7 +105,7 @@ def sparql(domain, query):
             response = response.json()
             print(json.dumps(response, indent=2))
         except Exception as e:
-            print(reponse)
+            print(response)
             raise e
 
 
