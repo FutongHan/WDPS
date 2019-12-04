@@ -152,7 +152,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                     print(candidate,label)
                     # Query the candidate
                     freebaseID = candidate[2][1:].replace("/",".")
-                    query = "select * where {<http://rdf.freebase.com/ns/%s> ?p ?o} limit 100" % freebaseID
+                    query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
                     sparql(DOMAIN_KB, query)
                     break
                     # Check if the candidate's tag/label matches the label given by spaCy
