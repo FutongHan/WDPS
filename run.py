@@ -2,6 +2,7 @@ import sys
 import gzip
 import os
 import requests
+import json
 from bs4 import BeautifulSoup, Comment
 import spacy
 nlp = spacy.load("en_core_web_lg")
@@ -141,7 +142,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 
                 # Query in KB
                 for candidate in candidates:
-                    query = "select * where {<http://rdf.freebase.com/ns/m/02psg65> ?p ?o} limit 100"
+                    query = "select * where {<http://rdf.freebase.com/ns%s> ?p ?o} limit 100" % candidate[2]
                     sparql(DOMAIN_KB, query)
 
 
