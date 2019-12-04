@@ -171,7 +171,6 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
                                 
-                
                 # No candidates, skip to next doc
                 if not candidates:
                     continue
@@ -184,6 +183,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
       
                 # Query in KB
                 for i in range(len(candidates) - 1):
+                    print(candidates[i])
                     if(candidates[i][1] < score_margin):
                         print("no match")
                         break
