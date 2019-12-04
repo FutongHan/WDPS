@@ -135,8 +135,12 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
                 
-                print(candidates)
+                # No candidates, skip to next doc
+                if not candidates:
+                    continue
                 
+                print(candidates)
+
                 # # Query in KB
                 # query = ...
                 # sparql(DOMAIN_KB, query)
