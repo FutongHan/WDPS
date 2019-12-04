@@ -132,7 +132,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
             """ 3) Entity Linking """
             for entity in doc.ents:
                 label = entity.label_
-				
+		
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
 
@@ -157,7 +157,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                     break
                     # Check if the candidate's tag/label matches the label given by spaCy
                 break
-
+        break
 
 
                     
