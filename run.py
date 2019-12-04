@@ -194,10 +194,10 @@ def run(DOMAIN_ES, DOMAIN_KB):
                         break
                     else:
                         for j in range(i, len(candidates)):
-                            if(abs(candidates[i][1] - candidates[j][1]) > diff_margin):
-                                print(candidates[i])
-                                mapped = True
-                                break
+                            #if(abs(candidates[i][1] - candidates[j][1]) > diff_margin):
+                            #    print(candidates[i])
+                            #    mapped = True
+                            #    break
                             # Query the candidate
                             freebaseID = candidates[j][2][1:].replace("/",".")
 
