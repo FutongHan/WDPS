@@ -104,11 +104,12 @@ def sparql(domain, query):
     if response:
         try:
             response = response.json()
-            print(json.dumps(response, indent=2))
-        except Exception as e:
+            # print(json.dumps(response, indent=2))
             print(response)
+        except Exception as e:
+            # print(response)
+            print('error')
             raise e
-
 
 ##### MAIN PROGRAM #####
 def run(DOMAIN_ES, DOMAIN_KB):
@@ -131,6 +132,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
 
             """ 3) Entity Linking """
             for entity in doc.ents:
+                label = entity.label_
+
                 # Candidate generation using Elasticsearch
                 nr_of_candidates = 100
                 candidates = generate_entities(
@@ -142,9 +145,17 @@ def run(DOMAIN_ES, DOMAIN_KB):
       
                 # Query in KB
                 for candidate in candidates:
+                    # Query the candidate
                     freebaseID = candidate[2][1:].replace("/",".")
                     query = "select * where {<http://rdf.freebase.com/ns/%s> ?p ?o} limit 100" % freebaseID
                     sparql(DOMAIN_KB, query)
+
+                    # Check if the candidate's tag/label matches the label given by spaCy
+                    
+
+
+
+                    
 
 
 if __name__ == '__main__':
