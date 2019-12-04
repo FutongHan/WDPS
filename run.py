@@ -190,7 +190,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                                 print(name,label,candidates[i])
                                 break
                             # Query the candidate
-                            freebaseID = candidate[j][1:].replace("/",".")
+                            freebaseID = candidate[j][2].replace("/",".")
                             query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
                             if(sparql(DOMAIN_KB, query, label)):
                                 print(name,label,candidates[j])
