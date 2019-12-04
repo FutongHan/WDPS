@@ -139,11 +139,13 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 # No candidates, skip to next doc
                 if not candidates:
                     continue
+
+                print(candidates[2])
                 
-                # Query in KB
-                for candidate in candidates:
-                    query = "select * where {<http://rdf.freebase.com/ns%s> ?p ?o} limit 100" % candidate[2]
-                    sparql(DOMAIN_KB, query)
+                # # Query in KB
+                # for candidate in candidates:
+                #     query = "select * where {<http://rdf.freebase.com/ns%s> ?p ?o} limit 100" % candidate[2]
+                #     sparql(DOMAIN_KB, query)
 
 
 if __name__ == '__main__':
