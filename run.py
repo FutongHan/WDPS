@@ -143,10 +143,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 # Query in KB
                 for candidate in candidates:
                     freebaseID = candidate[2][1:].replace("/",".")
-                    print(freebaseID)
-                    # q = QUERY % key
-                    # query = "select * where {<http://rdf.freebase.com/ns%s> ?p ?o} limit 100" % freebaseID
-                    # sparql(DOMAIN_KB, query)
+                    query = "select * where {<http://rdf.freebase.com/ns/%s> ?p ?o} limit 100" % freebaseID
+                    sparql(DOMAIN_KB, query)
 
 
 if __name__ == '__main__':
