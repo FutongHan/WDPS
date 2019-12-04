@@ -91,7 +91,9 @@ def generate_entities(domain, query, size):
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score', {})
 
-            id_labels.append((freebase_id, freebase_label, freebase_score))
+            print(dir(hit))
+
+            id_labels.append((freebase_label, freebase_score, freebase_id))
 
     return id_labels
 
@@ -139,7 +141,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 if not candidates:
                     continue
                 
-                print(candidates)
+                # print(candidates)
 
                 # # Query in KB
                 # query = ...
