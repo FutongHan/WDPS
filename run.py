@@ -182,11 +182,11 @@ def run(DOMAIN_ES, DOMAIN_KB):
                     if(candidates[i][1] < score_margin):
                         break
                     
-                    if(math.abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
+                    if(abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
                         print(name,label,candidates[i])
                     else:
                         for j in range(i, len(candidates)):
-                            if(math.abs(candidates[i][1] - candidates[j][1]) > diff_margin):
+                            if(abs(candidates[i][1] - candidates[j][1]) > diff_margin):
                                 print(name,label,candidates[i])
                                 break
                             # Query the candidate
