@@ -97,9 +97,6 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
-def is_contained(lis, string):
-    
-
 ##### ENTITY LINKING USING TRIDENT #####
 def sparql(domain, query, label):
     url = 'http://%s/sparql' % domain
