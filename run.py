@@ -78,18 +78,7 @@ def html2text(record):
     return ""
 
 
-##### ENTITY LINKING #####
-# def search_candidate(token, DOMAIN):
-#     entity_dict = {}
-#     entities = None
-#     if entity_dict.__contains__(token):
-#         entities = entity_dict[token]
-#     else:
-#         entities = search(DOMAIN, token).items()
-#         entity_dict[token] = entities
-#     return entities
-
-##### ENTITY GENERATION #####
+##### ENTITY CANDIDATE GENERATION #####
 def generate_entities(domain, query, size):
     url = 'http://%s/freebase/label/_search' % domain
     response = requests.get(url, params={'q': query, 'size': size})
@@ -106,10 +95,22 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
+
+##### ENTITY LINKING USING TRIDENT #####
+def sparql(domain, query):
+    url = 'http://%s/sparql' % domain
+    response = requests.post(url, data={'print': True, 'query': query})
+    if response:
+        try:
+            response = response.json()
+            print(json.dumps(response, indent=2))
+        except Exception as e:
+            print(reponse)
+            raise e
+
+
 ##### MAIN PROGRAM #####
-
-
-def run(DOMAIN):
+def run(DOMAIN_ES, DOMAIN_KB):
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
@@ -127,17 +128,23 @@ def run(DOMAIN):
             if doc.ents == ():
                 continue
 
-            entities = [(X.text, X.label_, X.kb_id_) for X in doc.ents]
-            print(entities)
+            """ 3) Entity Linking """
+            for entity in doc.ents:
+                # Candidate generation using Elasticsearch
+                nr_of_candidates = 100
+                candidates = generate_entities(
+                    DOMAIN_ES, entity.text, nr_of_candidates)
 
-            """ 4) Entity Linking """
+                # # Query in KB
+                # query = ...
+                # sparql(DOMAIN_KB, query)
 
 
 if __name__ == '__main__':
     try:
-        _, DOMAIN = sys.argv
+        _, DOMAIN_ES, DOMAIN_KB = sys.argv
     except Exception as e:
-        print('Usage: python start.py DOMAIN')
+        print('Usage: python start.py DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    run(DOMAIN)
+    run(DOMAIN_ES, DOMAIN_KB)

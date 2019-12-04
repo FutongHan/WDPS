@@ -29,7 +29,7 @@ KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
 # Entity recognition and linking
-python run.py $ES_NODE:$ES_PORT
+python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
