@@ -134,7 +134,6 @@ def run(DOMAIN):
 
 
 if __name__ == '__main__':
-    run()
     try:
         _, DOMAIN = sys.argv
     except Exception as e:
