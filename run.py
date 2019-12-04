@@ -104,6 +104,7 @@ def sparql(domain, query, label):
     if response:
         try:
             response = response.json()
+            print(json.dumps(response, indent=2))
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
@@ -178,9 +179,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 if len(candidates) == 1:
                     if(candidates[0][1] < score_margin):
                         print("no match")
-                        break
-                    print(candidate)
-                    
+                        continue
+                    print(candidate)                    
       
                 # Query in KB
                 for i in range(len(candidates) - 1):
