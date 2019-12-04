@@ -104,7 +104,6 @@ def sparql(domain, query, label):
     if response:
         try:
             response = response.json()
-            print(json.dumps(response, indent=2))
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
@@ -199,7 +198,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                                 break
                             # Query the candidate
                             freebaseID = candidates[j][2][1:].replace("/",".")
-                            print(freebaseID)
+
                             query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
                             if(sparql(DOMAIN_KB, query, label)):
                                 print(candidates[j])
