@@ -134,6 +134,9 @@ def sparql(domain, query, label):
 
 ##### MAIN PROGRAM #####
 def run(DOMAIN_ES, DOMAIN_KB):
+    score_margin = 5
+    diff_margin = 1
+    
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
@@ -171,37 +174,31 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 if not candidates:
                     continue
                     
-                candidate = candidates[0]
-                print(name,label,candidate)
-                
-                score_margin = 5
-                diff_margin = 1
+                if len(candidates) == 1:
+                    if(candidates[0][1] < score_margin):
+                        print("no match")
+                        break
+                    print(candidate)
       
                 # Query in KB
                 for i in range(len(candidates) - 1):
-
-
                     if(candidates[i][1] < score_margin):
                         print("no match")
                         break
                     
                     if(abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
-                        print(name,label,candidates[i])
+                        print(candidates[i])
                     else:
                         for j in range(i, len(candidates)):
                             if(abs(candidates[i][1] - candidates[j][1]) > diff_margin):
-                                print(name,label,candidates[i])
+                                print(candidates[i])
                                 break
                             # Query the candidate
                             freebaseID = candidates[j][2].replace("/",".")
                             query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
                             if(sparql(DOMAIN_KB, query, label)):
-                                print(name,label,candidates[j])
+                                print(candidates[j])
                                 break  
-                    break
-                    # Check if the candidate's tag/label matches the label given by spaCy
-                break
-
 
 if __name__ == '__main__':
     try:
