@@ -105,7 +105,7 @@ def sparql(domain, query, label):
     if response:
         try:
             response = response.json()
-            print(json.dumps(response, indent=2))
+            #print(json.dumps(response, indent=2))
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
