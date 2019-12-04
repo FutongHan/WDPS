@@ -10,6 +10,8 @@ __pycache__/
 .es_log*
 .es_log.0
 .es_node
+.kb_log.0
+.kb_node
 
 # Distribution / packaging
 .Python

@@ -157,7 +157,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
                     break
                     # Check if the candidate's tag/label matches the label given by spaCy
                 break
-        break
+        if(label not in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
+            break
 
 
                     
