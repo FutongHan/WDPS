@@ -99,6 +99,7 @@ def generate_entities(domain, query, size):
 
 ##### ENTITY LINKING USING TRIDENT #####
 def sparql(domain, query, label):
+    print("checking: ",query,label)
     url = 'http://%s/sparql' % domain
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
@@ -126,6 +127,7 @@ def sparql(domain, query, label):
                 return True 
             if label == "LANGUAGE" and "language." in json.dumps(response, indent=2):
                 return True         
+            return False
             
         except Exception as e:
             # print(response)
@@ -182,7 +184,6 @@ def run(DOMAIN_ES, DOMAIN_KB):
       
                 # Query in KB
                 for i in range(len(candidates) - 1):
-                    print(candidates[i])
                     if(candidates[i][1] < score_margin):
                         print("no match")
                         break
