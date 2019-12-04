@@ -104,27 +104,27 @@ def sparql(domain, query, label):
     if response:
         try:
             response = response.json()
-            if label == "PERSON" and "people." is in json.dumps(response, indent=2):
+            if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return true
-            if label == "NORP" and "organisation" is in json.dumps(response, indent=2):
+            if label == "NORP" and "organisation" in json.dumps(response, indent=2):
                 return true         
-            if label == "FAC" and "" is in json.dumps(response, indent=2):
+            if label == "FAC" and "" in json.dumps(response, indent=2):
                 return true
-            if label == "ORG" and "organisation." is in json.dumps(response, indent=2):
+            if label == "ORG" and "organisation." in json.dumps(response, indent=2):
                 return true
-            if label == "GPE" and "location." is in json.dumps(response, indent=2):
+            if label == "GPE" and "location." in json.dumps(response, indent=2):
                 return true             
-            if label == "LOC" and "location." is in json.dumps(response, indent=2):
+            if label == "LOC" and "location." in json.dumps(response, indent=2):
                 return true             
-            if label == "PRODUCT" and "" is in json.dumps(response, indent=2):
+            if label == "PRODUCT" and "" in json.dumps(response, indent=2):
                 return true             
-            if label == "EVENT" and "event." is in json.dumps(response, indent=2):
+            if label == "EVENT" and "event." in json.dumps(response, indent=2):
                 return true             
-            if label == "WORK_OF_ART" and "" is in json.dumps(response, indent=2):
+            if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
                 return true
-            if label == "LAW" and "law." is in json.dumps(response, indent=2):
+            if label == "LAW" and "law." in json.dumps(response, indent=2):
                 return true 
-            if label == "LANGUAGE" and "language." is in json.dumps(response, indent=2):
+            if label == "LANGUAGE" and "language." in json.dumps(response, indent=2):
                 return true         
             
         except Exception as e:
