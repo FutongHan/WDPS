@@ -134,7 +134,9 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 nr_of_candidates = 100
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
-
+                
+                print(candidates)
+                
                 # # Query in KB
                 # query = ...
                 # sparql(DOMAIN_KB, query)
