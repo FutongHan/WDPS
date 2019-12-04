@@ -158,8 +158,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
-					
-				print(name,label)
+                    
+                print(name,label)
 
                 # Candidate generation using Elasticsearch
                 nr_of_candidates = 100
