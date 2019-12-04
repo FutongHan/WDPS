@@ -4,14 +4,12 @@ import os
 import requests
 from bs4 import BeautifulSoup, Comment
 import spacy
+nlp = spacy.load("en_core_web_lg")
+
 # from elasticsearch import search
 
 
-nlp = spacy.load("en_core_web_sm")
-
 ##### HTML PROCESSING #####
-
-
 def split_records(stream):
     payload = ''
     for line in stream:
@@ -78,23 +76,6 @@ def html2text(record):
 
         return text
     return ""
-	
-##### ENTITY GENERATION #####	
-def generate_entities(domain, query, size):
-    url = 'http://%s/freebase/label/_search' % domain
-    response = requests.get(url, params={'q': query, 'size': size})
-    id_labels = []
-    if response:
-        response = response.json()
-        for hit in response.get('hits', {}).get('hits', []):
-
-            freebase_label = hit.get('_source', {}).get('label')
-            freebase_id = hit.get('_source', {}).get('resource')
-            freebase_score = hit.get('_score', {})
-			
-            id_labels.append( (freebase_id, freebase_label, freebase_score) )
-           
-    return id_labels  
 
 
 ##### ENTITY LINKING #####
@@ -108,32 +89,52 @@ def generate_entities(domain, query, size):
 #         entity_dict[token] = entities
 #     return entities
 
+##### ENTITY GENERATION #####
+def generate_entities(domain, query, size):
+    url = 'http://%s/freebase/label/_search' % domain
+    response = requests.get(url, params={'q': query, 'size': size})
+    id_labels = []
+    if response:
+        response = response.json()
+        for hit in response.get('hits', {}).get('hits', []):
+
+            freebase_label = hit.get('_source', {}).get('label')
+            freebase_id = hit.get('_source', {}).get('resource')
+            freebase_score = hit.get('_score', {})
+
+            id_labels.append((freebase_id, freebase_label, freebase_score))
+
+    return id_labels
 
 ##### MAIN PROGRAM #####
+
+
 def run(DOMAIN):
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
     for record in split_records(warcfile):
-        key = find_key(record) # The filename we need to output
+        key = find_key(record)  # The filename we need to output
 
         if key != '':
-            # HTML processing
+            """ 1) HTML processing """
             html = html2text(record)
 
-            # SpaCy
+            """ 2) SpaCy NER """
             doc = nlp(html)
-			
-            for X in doc.ents:
-                print( (X.text, X.label_) )
-                print(generate_entities(DOMAIN, X.text, 1))
+
+            # No entity in the document, proceed to next doc
+            if doc.ents == ():
+                continue
+
+            entities = [(X.text, X.label_, X.kb_id_) for X in doc.ents]
+            print(entities)
+
+            """ 4) Entity Linking """
 
 
-        # for X in doc.ents:
-        #     entities = search_candidate(X.text, DOMAIN)
-        #     print(entities)
-		
 if __name__ == '__main__':
+    run()
     try:
         _, DOMAIN = sys.argv
     except Exception as e:
