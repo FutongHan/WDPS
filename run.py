@@ -99,7 +99,7 @@ def generate_entities(domain, query, size):
 
 ##### ENTITY LINKING USING TRIDENT #####
 def sparql(domain, query, label):
-    print("checking: ",query,label)
+    #print("checking: ",query,label)
     url = 'http://%s/sparql' % domain
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
@@ -169,7 +169,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 print(name,label)
 
                 # Candidate generation using Elasticsearch
-                nr_of_candidates = 100
+                nr_of_candidates = 10
                 candidates = generate_entities(
                     DOMAIN_ES, entity.text, nr_of_candidates)
                                 
