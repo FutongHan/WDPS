@@ -105,27 +105,27 @@ def sparql(domain, query, label):
         try:
             response = response.json()
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
-                return true
+                return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
-                return true         
+                return True         
             if label == "FAC" and "" in json.dumps(response, indent=2):
-                return true
+                return True
             if label == "ORG" and "organisation." in json.dumps(response, indent=2):
-                return true
+                return True
             if label == "GPE" and "location." in json.dumps(response, indent=2):
-                return true             
+                return True             
             if label == "LOC" and "location." in json.dumps(response, indent=2):
-                return true             
+                return True             
             if label == "PRODUCT" and "" in json.dumps(response, indent=2):
-                return true             
+                return True             
             if label == "EVENT" and "event." in json.dumps(response, indent=2):
-                return true             
+                return True             
             if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
-                return true
+                return True
             if label == "LAW" and "law." in json.dumps(response, indent=2):
-                return true 
+                return True 
             if label == "LANGUAGE" and "language." in json.dumps(response, indent=2):
-                return true         
+                return True         
             
         except Exception as e:
             # print(response)
@@ -156,10 +156,10 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 label = entity.label_
                 name = entity.text
                 
-                print(name,label)
-        
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
+					
+				print(name,label)
 
                 # Candidate generation using Elasticsearch
                 nr_of_candidates = 100
