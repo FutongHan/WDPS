@@ -136,33 +136,27 @@ def link_entity(label, name,score_margin,diff_margin):
     print("name,label",name,label)
 
     # Candidate generation using Elasticsearch
-    nr_of_candidates = 25
+    nr_of_candidates = 100
     candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
 
-    # No candidates, skip to next doc
+    exact_matches = []
+
     if not candidates:
-        return "no candidate"
-    # Only 1 candidate, check if good enough
-    if len(candidates) == 1:
-        if(candidates[0][1] < score_margin):
-            return "one bad candidate"
+        return None
+
+    for candidate in candidates:
+        if name.lower() == candidate[0].lower():
+            exact_matches.append(candidate)
+
+    if not exact_matches:
         return candidates[0]
-    # At least 2 candidates
-    for i in range(len(candidates) - 1):
-        if(candidates[i][1] < score_margin):
-            for ca in candidates:
-                print(ca[0],ca[1], end =", ")
-            return "many bad candidates"
 
-        if(abs(candidates[0][1] - candidates[i+1][1]) > diff_margin):
-            return candidates[0]
-
-        freebaseID = candidates[i][2][1:].replace("/",".")
-
+    for match in exact_matches:
+        freebaseID = match[2][1:].replace("/",".")
         if(sparql(DOMAIN_KB, freebaseID, label)):
-            print(label)
-            return candidates[i]
+            return match
 
+    return candidates[0]
 
 ##### MAIN PROGRAM #####
 def run(DOMAIN_ES, DOMAIN_KB):
