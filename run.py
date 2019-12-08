@@ -132,7 +132,7 @@ def sparql(domain, freebaseID, label):
             print('error')
             raise e
 
-def link_entity(label, name,score_margin,diff_margin,db):
+def link_entity(label, name,score_margin,diff_margin):
     print("name,label",name,label)
 
     # Candidate generation using Elasticsearch
