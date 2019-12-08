@@ -98,9 +98,10 @@ def generate_entities(domain, query, size):
     return id_labels
 
 ##### ENTITY LINKING USING TRIDENT #####
-def sparql(domain, query, label):
+def sparql(domain, freebaseID, label):
     #print("checking: ",query,label)
     url = 'http://%s/sparql' % domain
+    query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
         try:
@@ -109,37 +110,65 @@ def sparql(domain, query, label):
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
-                return True         
+                return True
             if label == "FAC" and "" in json.dumps(response, indent=2):
                 return True
             if label == "ORG" and "organisation." in json.dumps(response, indent=2):
                 return True
             if label == "GPE" and "location." in json.dumps(response, indent=2):
-                return True             
+                return True
             if label == "LOC" and "location." in json.dumps(response, indent=2):
-                return True             
+                return True
             if label == "PRODUCT" and "" in json.dumps(response, indent=2):
-                return True             
+                return True
             if label == "EVENT" and "event." in json.dumps(response, indent=2):
-                return True             
+                return True
             if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
                 return True
             if label == "LAW" and "law." in json.dumps(response, indent=2):
-                return True 
+                return True
             if label == "LANGUAGE" and "language." in json.dumps(response, indent=2):
-                return True         
+                return True
             return False
-            
+
         except Exception as e:
-            # print(response)
             print('error')
             raise e
+
+def link_entity(label, name,score_margin,diff_margin):
+    print("name,label",name,label)
+
+    # Candidate generation using Elasticsearch
+    nr_of_candidates = 50
+    candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
+
+    # No candidates, skip to next doc
+    if not candidates:
+        return None
+    # Only 1 candidate, check if good enough
+    if len(candidates) == 1:
+        if(candidates[0][1] < score_margin):
+            return None
+        return candidates[0]
+    # At least 2 candidates
+    for i in range(len(candidates) - 1):
+        if(candidates[i][1] < score_margin):
+            return None
+
+        if(abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
+            return candidates[i]
+        else:
+            for j in range(i, len(candidates)):
+                freebaseID = candidates[j][2][1:].replace("/",".")
+                print(sparql(DOMAIN_KB, freebaseID, label))
+                if(sparql(DOMAIN_KB, freebaseID, label)):
+                    return candidates[j]
 
 ##### MAIN PROGRAM #####
 def run(DOMAIN_ES, DOMAIN_KB):
     score_margin = 5
     diff_margin = 1
-    
+
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
@@ -161,53 +190,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
             for entity in doc.ents:
                 label = entity.label_
                 name = entity.text
-                mapped = False
-                
-                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
-                    continue
-                    
-                print(name,label)
-
-                # Candidate generation using Elasticsearch
-                nr_of_candidates = 10
-                candidates = generate_entities(
-                    DOMAIN_ES, entity.text, nr_of_candidates)
-                                
-                # No candidates, skip to next doc
-                if not candidates:
-                    continue
-                    
-                if len(candidates) == 1:
-                    if(candidates[0][1] < score_margin):
-                        print("no match")
-                        continue
-                    print(candidate)                    
-      
-                # Query in KB
-                for i in range(len(candidates) - 1):
-                    if(candidates[i][1] < score_margin):
-                        print("no match")
-                        break
-                    
-                    if(abs(candidates[i][1] - candidates[i+1][1]) > diff_margin):
-                        print(candidates[i])
-                        break
-                    else:
-                        for j in range(i, len(candidates)):
-                            #if(abs(candidates[i][1] - candidates[j][1]) > diff_margin):
-                            #    print(candidates[i])
-                            #    mapped = True
-                            #    break
-                            # Query the candidate
-                            freebaseID = candidates[j][2][1:].replace("/",".")
-
-                            query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
-                            if(sparql(DOMAIN_KB, query, label)):
-                                print(candidates[j])
-                                mapped = True
-                                break 
-                    if mapped:
-                        break
+                print(link_entity(label, name,score_margin,diff_margin))
 
 if __name__ == '__main__':
     try:
