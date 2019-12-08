@@ -100,10 +100,10 @@ def candidate_entity_recognization(record):
         if not key:
             continue
 
-            """ 1) HTML processing """
+        #""" 1) HTML processing """
         html = html2text(record)
 
-            """ 2) SpaCy NER """
+        #""" 2) SpaCy NER """
         doc = nlp(html)
 
             # No entity in the document, proceed to next doc
