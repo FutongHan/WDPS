@@ -4,10 +4,8 @@ import requests
 import json
 from bs4 import BeautifulSoup, Comment
 import spacy
+import csv
 nlp = spacy.load("en_core_web_lg")
-
-# from elasticsearch import search
-
 
 ##### HTML PROCESSING #####
 def split_records(stream):
@@ -103,7 +101,6 @@ def sparql(domain, freebaseID, label):
     if response:
         try:
             response = response.json()
-            #print(json.dumps(response, indent=2))
             if label == "PERSON" and "people." in json.dumps(response, indent=2):
                 return True
             if label == "NORP" and "organisation" in json.dumps(response, indent=2):
@@ -171,10 +168,16 @@ def run(DOMAIN_ES, DOMAIN_KB):
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
-    for record in split_records(warcfile):
-        key = find_key(record)  # The filename we need to output
 
-        if key != '':
+    with open('output.tsv', 'w+') as out_file:
+        tsv_writer = csv.writer(out_file, delimiter='\t')
+
+        for record in split_records(warcfile):
+            key = find_key(record)  # The filename we need to output
+
+            if not key:
+                continue
+
             """ 1) HTML processing """
             html = html2text(record)
 
@@ -191,7 +194,9 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 name = entity.text
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
                     continue
-                print(link_entity(label, name,score_margin,diff_margin))
+                candidate = link_entity(label, name,score_margin,diff_margin)
+                print([key, name ,candidate[2]])
+                tsv_writer.writerow([key, name ,candidate[2]])
 
 if __name__ == '__main__':
     try:
