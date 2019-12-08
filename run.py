@@ -4,7 +4,6 @@ import requests
 import json
 from bs4 import BeautifulSoup, Comment
 import spacy
-import trident
 nlp = spacy.load("en_core_web_lg")
 
 # from elasticsearch import search
@@ -97,9 +96,10 @@ def generate_entities(domain, query, size):
     return id_labels
 
 ##### ENTITY LINKING USING TRIDENT #####
-def sparql(freebaseID, label, db):
+def sparql(domain, freebaseID, label):
+    url = 'http://%s/sparql' % domain
     query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
-    response = db.sparql(query)
+    response = requests.post(url, data={'print': True, 'query': query})
     if response:
         try:
             response = response.json()
@@ -157,16 +157,15 @@ def link_entity(label, name,score_margin,diff_margin,db):
 
         freebaseID = candidates[i][2][1:].replace("/",".")
 
-        if(sparql(freebaseID, label,db)):
+        if(sparql(DOMAIN_KB, freebaseID, label)):
             print(label)
             return candidates[i]
 
 
 ##### MAIN PROGRAM #####
-def run(DOMAIN_ES):
+def run(DOMAIN_ES, DOMAIN_KB):
     score_margin = 5
     diff_margin = 1
-    db = trident.Db('/home/jurbani/data/motherkb-trident')
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
@@ -190,13 +189,13 @@ def run(DOMAIN_ES):
                 name = entity.text
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
                     continue
-                print(link_entity(label, name,score_margin,diff_margin,db))
+                print(link_entity(label, name,score_margin,diff_margin))
 
 if __name__ == '__main__':
     try:
-        _, DOMAIN_ES = sys.argv
+        _, DOMAIN_ES, DOMAIN_KB = sys.argv
     except Exception:
-        print('Usage: python start.py DOMAIN_ES')
+        print('Usage: python start.py DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    run(DOMAIN_ES)
+    run(DOMAIN_ES, DOMAIN_KB)
