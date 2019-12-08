@@ -2,6 +2,7 @@
 source .env/bin/activate
 module load prun
 export SPARK_HOME="/home/bbkruit/spark-2.4.0-bin-without-hadoop"
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 # Start Elasticsearch server
 ES_PORT=9200
@@ -33,8 +34,7 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./.env/bin/python3 \
---master yarn \
+--master local[5]
 --deploy-mode cluster \
 --executor-memory 2G \
 --num-executors 5 \
