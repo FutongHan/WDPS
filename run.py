@@ -191,7 +191,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
             """ 3) Entity Linking """
             for entity in doc.ents:
                 label = entity.label_
-                name = entity.text
+                name = entity.text.rstrip().replace("'s","").replace("´s","")
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
                     continue
                 candidate = link_entity(label, name,score_margin,diff_margin)
