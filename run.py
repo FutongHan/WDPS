@@ -195,6 +195,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
                 if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
                     continue
                 candidate = link_entity(label, name,score_margin,diff_margin)
+                if not candidate:
+                    continue
                 print([key, name ,candidate[2]])
                 tsv_writer.writerow([key, name ,candidate[2]])
 
