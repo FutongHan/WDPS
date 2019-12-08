@@ -141,16 +141,16 @@ def link_entity(label, name,score_margin,diff_margin):
 
     # No candidates, skip to next doc
     if not candidates:
-        return None
+        return "no candidate"
     # Only 1 candidate, check if good enough
     if len(candidates) == 1:
         if(candidates[0][1] < score_margin):
-            return None
+            return "one bad candidate"
         return candidates[0]
     # At least 2 candidates
     for i in range(len(candidates) - 1):
         if(candidates[i][1] < score_margin):
-            return None
+            return "many bad candidates"
 
         if(abs(candidates[0][1] - candidates[i+1][1]) > diff_margin):
             return candidates[0]
