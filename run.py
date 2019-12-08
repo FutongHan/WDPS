@@ -139,7 +139,7 @@ def link_entity(label, name,score_margin,diff_margin):
     print("name,label",name,label)
 
     # Candidate generation using Elasticsearch
-    nr_of_candidates = 50
+    nr_of_candidates = 10
     candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
 
     # No candidates, skip to next doc
@@ -191,6 +191,8 @@ def run(DOMAIN_ES, DOMAIN_KB):
             for entity in doc.ents:
                 label = entity.label_
                 name = entity.text
+                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
+                    continue
                 print(link_entity(label, name,score_margin,diff_margin))
 
 if __name__ == '__main__':
