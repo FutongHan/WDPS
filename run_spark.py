@@ -1,3 +1,9 @@
+
+# coding: utf-8
+
+# In[ ]:
+
+
 import sys
 import gzip
 import requests
@@ -5,18 +11,23 @@ import json
 from bs4 import BeautifulSoup, Comment
 import spacy
 import csv
+from pyspark import SparkContext
 nlp = spacy.load("en_core_web_lg")
 
-##### HTML PROCESSING #####
-def split_records(stream):
-    payload = ''
-    for line in stream:
-        if line.strip() == "WARC/1.0":
-            yield payload
-            payload = ''
-        else:
-            payload += line
+DOMAIN_ES, DOMAIN_KB = sys.argv
 
+INFILE = 'data/sample.warc.gz'
+out_file = 'output.tsv'
+
+sc = SparkContext("yarn", "wdps1911")
+
+##### HTML PROCESSING #####
+
+rdd = sc.newAPIHadoopFile(INFILE,
+                          "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
+                          "org.apache.hadoop.io.LongWritable",
+                          "org.apache.hadoop.io.Text",
+                          conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
 def find_key(payload):
     key = None
@@ -25,7 +36,6 @@ def find_key(payload):
             key = line.split(': ')[1]
             return key
     return ''
-
 
 def record2html(record):
     # find html in warc file
@@ -75,8 +85,35 @@ def html2text(record):
         return text
     return ""
 
+def candidate_entity_recognization(record):
+#     score_margin = 4
+#     diff_margin = 1
+    # Read warc file
+#     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
 
-##### ENTITY CANDIDATE GENERATION #####
+#     with open('output.tsv', 'w+') as out_file:
+#         tsv_writer = csv.writer(out_file, delimiter='\t')
+    _,payload = record
+    for record in split_records(warcfile):
+        key = find_key(record)  # The filename we need to output
+
+        if not key:
+            continue
+
+            """ 1) HTML processing """
+        html = html2text(record)
+
+            """ 2) SpaCy NER """
+        doc = nlp(html)
+
+            # No entity in the document, proceed to next doc
+        if doc.ents == ():
+            continue
+        for X in doc.ents:
+            yield (X.text, X.label_)
+            
+rdd = rdd.flatMap(candidate_entity_recognization)
+
 def generate_entities(domain, query, size):
     url = 'http://%s/freebase/label/_search' % domain
     response = requests.get(url, params={'q': query, 'size': size})
@@ -93,7 +130,6 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
-##### ENTITY LINKING USING TRIDENT #####
 def sparql(domain, freebaseID, label):
     url = 'http://%s/sparql' % domain
     query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
@@ -115,6 +151,8 @@ def sparql(domain, freebaseID, label):
                 return True
             if label == "PRODUCT" and "" in json.dumps(response, indent=2):
                 return True
+            if label == "EVENT" and "event." in json.dumps(response, indent=2):
+                return True
             if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
                 return True
             if label == "LAW" and "law." in json.dumps(response, indent=2):
@@ -126,7 +164,7 @@ def sparql(domain, freebaseID, label):
         except Exception as e:
             print('error')
             raise e
-
+            
 def link_entity(label, name,score_margin,diff_margin):
     print("name,label",name,label)
 
@@ -159,50 +197,38 @@ def link_entity(label, name,score_margin,diff_margin):
 
     return candidates[0]
 
-##### MAIN PROGRAM #####
-def run(DOMAIN_ES, DOMAIN_KB):
+
+def run(record):
+    _,payload = record
     score_margin = 4
     diff_margin = 1
-    # Read warc file
-    warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
+    for record in split_records(warcfile):
+        key = find_key(record)  # The filename we need to output
 
-
-    with open('output.tsv', 'w+') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter='\t')
-
-        for record in split_records(warcfile):
-            key = find_key(record)  # The filename we need to output
-
-            if not key:
-                continue
+        if not key:
+            continue
 
             """ 1) HTML processing """
-            html = html2text(record)
+        html = html2text(record)
 
             """ 2) SpaCy NER """
-            doc = nlp(html)
+        doc = nlp(html)
 
             # No entity in the document, proceed to next doc
-            if doc.ents == ():
-                continue
-
+        if doc.ents == ():
+            continue
+            
             """ 3) Entity Linking """
-            for entity in doc.ents:
-                label = entity.label_
-                name = entity.text.rstrip().replace("'s","").replace("´s","")
-                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-                    continue
-                candidate = link_entity(label, name,score_margin,diff_margin)
-                if not candidate:
-                    continue
-                print([key, name ,candidate[2]])
-                tsv_writer.writerow([key, name ,candidate[2]])
+        for entity in doc.ents:
+            label = entity.label_
+            name = entity.text.rstrip().replace("'s","").replace("´s","")
+            if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+                continue
+            candidate = link_entity(label, name,score_margin,diff_margin)
+            if not candidate:
+                continue
+            yield([key, name ,candidate[2]])
+#             tsv_writer.writerow([key, name ,candidate[2]])
 
-if __name__ == '__main__':
-    try:
-        _, DOMAIN_ES, DOMAIN_KB = sys.argv
-    except Exception:
-        print('Usage: python start.py DOMAIN_ES, DOMAIN_TRIDENT')
-        sys.exit(0)
+rdd = rdd.saveAsTextFile(out_file)
 
-    run(DOMAIN_ES, DOMAIN_KB)
