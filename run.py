@@ -166,7 +166,7 @@ def link_entity(label, name,score_margin,diff_margin):
 
 ##### MAIN PROGRAM #####
 def run(DOMAIN_ES, DOMAIN_KB):
-    score_margin = 5
+    score_margin = 4
     diff_margin = 1
     # Read warc file
     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
