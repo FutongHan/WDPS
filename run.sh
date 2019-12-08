@@ -31,7 +31,12 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 # Entity recognition and linking
 # python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
-spark-submit run_spark.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+
+spark-submit \
+--deploy-mode cluster \
+--executor-memory 2G \
+--num-executors 5 \
+run_spark.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
