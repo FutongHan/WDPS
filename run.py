@@ -115,6 +115,8 @@ def sparql(domain, freebaseID, label):
                 return True
             if label == "PRODUCT" and "" in json.dumps(response, indent=2):
                 return True
+            if label == "EVENT" and "event." in json.dumps(response, indent=2):
+                return True
             if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
                 return True
             if label == "LAW" and "law." in json.dumps(response, indent=2):

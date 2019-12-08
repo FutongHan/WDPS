@@ -16,7 +16,7 @@ nlp = spacy.load("en_core_web_lg")
 
 _, DOMAIN_ES, DOMAIN_KB = sys.argv
 
-INFILE = 'data/sample.warc.gz'
+INFILE = 'hdfs:///user/bbkruit/sample.warc.gz'
 out_file = 'output.tsv'
 
 sc = SparkContext("yarn", "wdps1911")
