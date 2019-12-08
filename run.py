@@ -160,8 +160,9 @@ def link_entity(label, name,score_margin,diff_margin):
         else:
             for j in range(i, len(candidates)):
                 freebaseID = candidates[j][2][1:].replace("/",".")
-                print(sparql(DOMAIN_KB, freebaseID, label))
+
                 if(sparql(DOMAIN_KB, freebaseID, label)):
+                    print(label)
                     return candidates[j]
 
 ##### MAIN PROGRAM #####
