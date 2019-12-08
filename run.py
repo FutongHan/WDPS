@@ -144,6 +144,9 @@ def link_entity(label, name,score_margin,diff_margin):
     if not candidates:
         return None
 
+    if label != "PERSON" and candidates[0][1] < score_margin:
+        return None
+
     for candidate in candidates:
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
@@ -183,7 +186,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
             for entity in doc.ents:
                 label = entity.label_
                 name = entity.text
-                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL"]):
+                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
                     continue
                 print(link_entity(label, name,score_margin,diff_margin))
 
