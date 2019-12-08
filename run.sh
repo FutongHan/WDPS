@@ -1,7 +1,6 @@
 # Activate the virtual env
 source .env/bin/activate
 module load prun
-export PYTHONPATH=/home/jurbani/trident/build-python
 
 # Start Elasticsearch server
 ES_PORT=9200
@@ -15,8 +14,25 @@ ES_PID=$!
 until [ -n "$(cat .es_log* | grep YELLOW)" ]; do sleep 1; done
 echo "elasticsearch should be running now on node $ES_NODE:$ES_PORT (connected to process $ES_PID)"
 
+# TODO: Start Trident server
+############################
+KB_PORT=9090
+KB_BIN=/home/jurbani/trident/build/trident
+KB_PATH=/home/jurbani/data/motherkb-trident
+
+echo "Lauching an instance of the Trident server on a random node in the cluster ..."
+prun -o .kb_log -v -np 1 $KB_BIN server -i $KB_PATH --port $KB_PORT </dev/null 2> .kb_node &
+echo "Waiting 5 seconds for trident to set up (use 'preserve -llist' to see if the node has been allocated)"
+until [ -n "$KB_NODE" ]; do KB_NODE=$(cat .kb_node | grep '^:' | grep -oP '(node...)'); done
+sleep 5
+KB_PID=$!
+echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
+
 # Entity recognition and linking
-python run.py $ES_NODE:$ES_PORT
+python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+
+# Stop Trident server
+kill $KB_PID
 
 # Stop Elasticsearch server
 kill $ES_PID
