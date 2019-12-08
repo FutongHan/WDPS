@@ -144,7 +144,7 @@ def link_entity(label, name,score_margin,diff_margin):
     if not candidates:
         return None
 
-    if label != "PERSON" and candidates[0][1] < 3:
+    if label != "PERSON" and candidates[0][1] < 4:
         return None
 
     if label == "PERSON" and candidates[0][1] < 1.5:
