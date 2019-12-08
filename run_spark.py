@@ -208,17 +208,17 @@ def run(record):
         if not key:
             continue
 
-        """ 1) HTML processing """
+        #""" 1) HTML processing """
         html = html2text(record)
 
-        """ 2) SpaCy NER """
+        #""" 2) SpaCy NER """
         doc = nlp(html)
 
-            # No entity in the document, proceed to next doc
+        # No entity in the document, proceed to next doc
         if doc.ents == ():
             continue
             
-        """ 3) Entity Linking """
+        #""" 3) Entity Linking """
         for entity in doc.ents:
             label = entity.label_
             name = entity.text.rstrip().replace("'s","").replace("´s","")
