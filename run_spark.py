@@ -14,7 +14,7 @@ import csv
 from pyspark import SparkContext
 nlp = spacy.load("en_core_web_lg")
 
-DOMAIN_ES, DOMAIN_KB = sys.argv
+_, DOMAIN_ES, DOMAIN_KB = sys.argv
 
 INFILE = 'data/sample.warc.gz'
 out_file = 'output.tsv'
