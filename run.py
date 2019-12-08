@@ -151,7 +151,7 @@ def link_entity(label, name,score_margin,diff_margin):
     for i in range(len(candidates) - 1):
         if(candidates[i][1] < score_margin):
             for ca in candidates:
-                print(ca[0], end =", ")
+                print(ca[0],ca[1], end =", ")
             return "many bad candidates"
 
         if(abs(candidates[0][1] - candidates[i+1][1]) > diff_margin):
