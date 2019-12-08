@@ -33,6 +33,9 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 spark-submit \
+--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./.env/bin/python3 \
+--master yarn \
+--deploy-mode cluster \
 --executor-memory 2G \
 --num-executors 5 \
 run_spark.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT

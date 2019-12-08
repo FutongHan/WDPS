@@ -16,7 +16,7 @@ nlp = spacy.load("en_core_web_lg")
 
 _, DOMAIN_ES, DOMAIN_KB = sys.argv
 
-INFILE = 'hdfs:///user/bbkruit/sample.warc.gz'
+INFILE = 'data/sample.warc.gz'
 out_file = 'output.tsv'
 
 sc = SparkContext("yarn", "wdps1911")
@@ -68,9 +68,6 @@ def html2text(record):
         # remove comments
         for element in soup(s=lambda s: isinstance(s, Comment)):
             element.extract()
-        # text = soup.get_text("\n", strip=True)
-
-        # get text in <p></p>
         paragraph = soup.find_all("p")
         text = ""
         for p in paragraph:
@@ -78,39 +75,27 @@ def html2text(record):
                 text += p.get_text(" ", strip=True)+"\n"
         if text == "":
             text = soup.get_text(" ", strip=True)
-        # text = re.sub(Rule, "", text)
-        # escape character
-        # soup_sec = BeautifulSoup(text,"html.parser")
-
         return text
     return ""
 
 def candidate_entity_recognization(record):
-#     score_margin = 4
-#     diff_margin = 1
-    # Read warc file
-#     warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
-
-#     with open('output.tsv', 'w+') as out_file:
-#         tsv_writer = csv.writer(out_file, delimiter='\t')
     _,payload = record
-    for record in split_records(warcfile):
-        key = find_key(record)  # The filename we need to output
+#     for record in split_records(warcfile):
+    key = find_key(record)  # The filename we need to output
 
-        if not key:
-            continue
+    if not key:
+        continue
 
-        #""" 1) HTML processing """
-        html = html2text(record)
+    """ 1) HTML processing """
+    html = html2text(record)
 
-        #""" 2) SpaCy NER """
-        doc = nlp(html)
-
-            # No entity in the document, proceed to next doc
-        if doc.ents == ():
-            continue
-        for X in doc.ents:
-            yield (X.text, X.label_)
+    """ 2) SpaCy NER """
+    doc = nlp(html)
+    # No entity in the document, proceed to next doc
+    if doc.ents == ():
+        continue
+    for X in doc.ents:
+        yield (X.text, X.label_)
             
 rdd = rdd.flatMap(candidate_entity_recognization)
 
@@ -197,38 +182,34 @@ def link_entity(label, name,score_margin,diff_margin):
 
     return candidates[0]
 
-
 def run(record):
     _,payload = record
     score_margin = 4
     diff_margin = 1
-    for record in split_records(warcfile):
-        key = find_key(record)  # The filename we need to output
+    key = find_key(record)  # The filename we need to output
 
-        if not key:
+    if not key:
+        continue
+
+    """ 1) HTML processing """
+    html = html2text(record)
+        
+    """ 2) SpaCy NER """
+    doc = nlp(html)
+    # No entity in the document, proceed to next doc
+    if doc.ents == ():
+        continue    
+    """ 3) Entity Linking """
+    for entity in doc.ents:
+        label = entity.label_
+        name = entity.text.rstrip().replace("'s","").replace("´s","")
+        if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
             continue
-
-        #""" 1) HTML processing """
-        html = html2text(record)
-
-        #""" 2) SpaCy NER """
-        doc = nlp(html)
-
-        # No entity in the document, proceed to next doc
-        if doc.ents == ():
+        candidate = link_entity(label, name,score_margin,diff_margin)
+        if not candidate:
             continue
-            
-        #""" 3) Entity Linking """
-        for entity in doc.ents:
-            label = entity.label_
-            name = entity.text.rstrip().replace("'s","").replace("´s","")
-            if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-                continue
-            candidate = link_entity(label, name,score_margin,diff_margin)
-            if not candidate:
-                continue
-            yield([key, name ,candidate[2]])
-#             tsv_writer.writerow([key, name ,candidate[2]])
+        yield([key, name ,candidate[2]])
+#       tsv_writer.writerow([key, name ,candidate[2]])
 
 rdd = rdd.saveAsTextFile(out_file)
 
