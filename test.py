@@ -149,10 +149,10 @@ def main():
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
-
+                              
     # Process the HTML files
     warc = warc.map(html2text)
-    warc = rdd.map(find_mentions)
+    warc = warc.map(find_mentions)
 
     print(warc.collect())
 
