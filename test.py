@@ -17,6 +17,9 @@
 
 from __future__ import print_function
 
+import csv
+import spacy
+from bs4 import BeautifulSoup, Comment
 from pyspark import SparkConf, SparkContext
 import time
 import threading
@@ -25,12 +28,8 @@ if sys.version >= '3':
     import queue as Queue
 else:
     import Queue
-    
-from bs4 import BeautifulSoup, Comment
-import spacy
-import csv
-nlp = spacy.load("en_core_web_lg")
 
+nlp = spacy.load("en_core_web_lg")
 
 
 ##### HTML PROCESSING #####
@@ -67,7 +66,7 @@ def record2html(record):
 
 
 def html2text(record):
-    _,record = record 
+    _, record = record
     html_doc = record2html(record)
     # Rule = "/<.*>/";
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
@@ -99,10 +98,26 @@ def html2text(record):
         # escape character
         # soup_sec = BeautifulSoup(text,"html.parser")
 
-
         yield text
-    yield "yo"
+    yield ""
 
+
+def find_mentions(record):
+    _, record = record
+
+    doc = nlp(record)
+
+    # No entity in the document, proceed to next doc
+    if doc.ents == ():
+        yield ""
+
+    """ 3) Entity Linking """
+    for entity in doc.ents:
+        label = entity.label_
+        name = entity.text.rstrip().replace("'s", "").replace("´s","")
+        if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+            continue
+        yield label, name
 
 
 
@@ -120,12 +135,12 @@ def main():
     # Process the HTML files
     rdd = rdd.flatMap(html2text)
 
+    rdd =
+
     print(rdd.collect())
 
-    
 
     print('success')
-
 
     # """ 1) HTML processing """
     #         html = html2text(record)
@@ -135,7 +150,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
 
 
 # def delayed(seconds):
@@ -178,4 +192,3 @@ if __name__ == "__main__":
 
 #     print("Job results are:", result.get())
 #     sc.stop()
-
