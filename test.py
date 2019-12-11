@@ -91,6 +91,8 @@ def html2text(record):
         # escape character
         # soup_sec = BeautifulSoup(text,"html.parser")
 
+        print(text)
+
         yield text
     yield ""
 
@@ -108,6 +110,8 @@ def main():
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     rdd = rdd.flatMap(html2text)
+
+    
 
     print('success')
 
