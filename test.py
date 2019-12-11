@@ -60,10 +60,10 @@ def record2html(record):
 
 
 def html2text(record):
-    html_doc = record2html(record)
-    # Rule = "/<.*>/";
-    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
-                    'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
+    # html_doc = record2html(record)
+    # # Rule = "/<.*>/";
+    # useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
+    #                 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
     # if html_doc:
     #     soup = BeautifulSoup(html_doc, "html.parser")
     #     # remove tags: <script> <style> <code> <title> <head>
@@ -93,7 +93,7 @@ def html2text(record):
 
 
         # yield text
-    yield ""
+    yield "yo"
 
 
 
