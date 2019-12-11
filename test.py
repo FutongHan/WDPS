@@ -202,6 +202,8 @@ def process(DOMAIN_ES, DOMAIN_KB):
 
     return process_partition
 
+def toTSV(data):
+    return data[0] + '\t' + data[1] + '\t' + data[2]
 
 def parallelize(DOMAIN_ES, DOMAIN_KB):
     conf = SparkConf()
@@ -219,9 +221,11 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
                                "org.apache.hadoop.io.Text",
                                conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    # Process the warc files
+    # Process the warc files, result is a list of the output variables: key, name, FreebaseID
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
-    print(result.take(2))
+
+    save_to_tsv = result.map(toTSV)
+    save_to_tsv.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
 
     print('success')
 
