@@ -102,24 +102,22 @@ def html2text(record):
     return ""
 
 
-def find_mentions(record):
-    _, record = record
+# def find_mentions(record):
+#     _, record = record
 
-    doc = nlp(record)
+#     doc = nlp(record)
 
-    # No entity in the document, proceed to next doc
-    if doc.ents == ():
-        return
+#     # No entity in the document, proceed to next doc
+#     if doc.ents == ():
+#         return
 
-    """ 3) Entity Linking """
-    for entity in doc.ents:
-        label = entity.label_
-        name = entity.text.rstrip().replace("'s", "").replace("´s","")
-        if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-            continue
-        return label, name
-
-   
+#     """ 3) Entity Linking """
+#     for entity in doc.ents:
+#         label = entity.label_
+#         name = entity.text.rstrip().replace("'s", "").replace("´s", "")
+#         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+#             continue
+#         return label, name
 
             # """ 3) Entity Linking """
             # for entity in doc.ents:
@@ -127,10 +125,7 @@ def find_mentions(record):
             #     name = entity.text.rstrip().replace("'s","").replace("´s","")
             #     if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
             #         continue
-                
-                
-                
-                
+
             #     candidate = link_entity(label, name,score_margin,diff_margin)
             #     if not candidate:
             #         continue
@@ -138,48 +133,119 @@ def find_mentions(record):
             #     tsv_writer.writerow([key, name ,candidate[2]])
 
 
-def process(warc):
-    _, record = warc
-
-    # Get the key for the output
-    key = find_key(record)
-
-    # No key, process the next record
-    if not key:
-        return
-    
-    """ 1) HTML processing """
-    html = html2text(record)
-
-    """ 2) SpaCy NER """
-    doc = nlp(html)
-
-    # No entity in the document, proceed to next record
-    if doc.ents == ():
-        return
-
-    test = [entity.label_ for entity in doc.ents]
-
-    return test
 
 
-    # """ 3) Entity Linking """
-    # for entity in doc.ents:
-    #     label = entity.label_
-    #     name = entity.text.rstrip().replace("'s","").replace("´s","")
+
+
+##### ENTITY CANDIDATE GENERATION #####
+def generate_entities(domain, query, size):
+    url = 'http://%s/freebase/label/_search' % domain
+    response = requests.get(url, params={'q': query, 'size': size})
+    id_labels = []
+    if response:
+        response = response.json()
+        for hit in response.get('hits', {}).get('hits', []):
+
+            freebase_label = hit.get('_source', {}).get('label')
+            freebase_id = hit.get('_source', {}).get('resource')
+            freebase_score = hit.get('_score', {})
+
+            id_labels.append((freebase_label, freebase_score, freebase_id))
+
+    return id_labels
+
+
+
+
+#### ENTITY RANKING + LINKING #########
+def link_entity(label, name,score_margin,diff_margin):
+    print("name,label",name,label)
+
+    # Candidate generation using Elasticsearch
+    nr_of_candidates = 100
+    candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
+
+    exact_matches = []
+
+    if not candidates:
+        return None
+
+    if label != "PERSON" and candidates[0][1] < 4:
+        return None
+
+    if label == "PERSON" and candidates[0][1] < 1.5:
+        return None
+
+    for candidate in candidates:
+        if name.lower() == candidate[0].lower():
+            exact_matches.append(candidate)
+
+    if not exact_matches:
+        return candidates[0]
+
+    for match in exact_matches:
+        freebaseID = match[2][1:].replace("/",".")
+        if(sparql(DOMAIN_KB, freebaseID, label)):
+            return match
+
+    return candidates[0]
+
+
+
+
+
+def process(DOMAIN_ES, DOMAIN_KB):
+    def process_partition(warc):
+
+
+    return process_partition
+
+
+
+# def process(warc):
+#     _, record = warc
+
+#     # Get the key for the output
+#     key = find_key(record)
+
+#     # No key, process the next record
+#     if not key:
+#         return
+
+#     """ 1) HTML processing """
+#     html = html2text(record)
+
+#     """ 2) SpaCy NER """
+#     doc = nlp(html)
+
+#     # No entity in the document, proceed to next record
+#     if doc.ents == ():
+#         return
+
+#     # Get the mentions in the document
+#     for mention in doc.ents:
+#         label = mention.label_
+#         name = mention.text.rstrip().replace("'s", "").replace("´s", "")
+
+#         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+#             continue
+
+#         """ 3) Entitiy Linking """
+#         # 3.1 Get candidates
+#         candidate = link_entity(label, name,score_margin,diff_margin)
+
+#         # No candidates
+#         if not candidate:
+#             continue
         
-    #     if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-    #         continue
+
+#         print([key, name ,candidate[2]])
+#         tsv_writer.writerow([key, name ,candidate[2]])
 
 
 
 
-
-
-
-
-
-def parallelize():
+def parallelize(DOMAIN_ES, DOMAIN_KB):
     conf = SparkConf()
     conf.set("spark.ui.showConsoleProgress", "false")
     conf.set("spark.driver.memory", "15g")
@@ -196,8 +262,8 @@ def parallelize():
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the warc files
-    result = warc.map(process)
-    print(result.take(10))
+    result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
+    # print(result.take(10))
 
     print('success')
 
@@ -213,7 +279,13 @@ def parallelize():
 
 
 if __name__ == "__main__":
-    parallelize()
+    try:
+        _, DOMAIN_ES, DOMAIN_KB = sys.argv
+    except Exception:
+        print('Usage: /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit test.py DOMAIN_ES, DOMAIN_TRIDENT')
+        sys.exit(0)
+
+    parallelize(DOMAIN_ES, DOMAIN_KB)
 
 
 # def delayed(seconds):
