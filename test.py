@@ -102,22 +102,41 @@ def html2text(record):
     return ""
 
 
-# def find_mentions(record):
-#     _, record = record
+def find_mentions(record):
+    _, record = record
 
-#     doc = nlp(record)
+    doc = nlp(record)
 
-#     # No entity in the document, proceed to next doc
-#     if doc.ents == ():
-#         yield ""
+    # No entity in the document, proceed to next doc
+    if doc.ents == ():
+        return
 
-#     """ 3) Entity Linking """
-#     for entity in doc.ents:
-#         label = entity.label_
-#         name = entity.text.rstrip().replace("'s", "").replace("´s","")
-#         if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-#             continue
-#         yield label, name
+    """ 3) Entity Linking """
+    for entity in doc.ents:
+        label = entity.label_
+        name = entity.text.rstrip().replace("'s", "").replace("´s","")
+        if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+            continue
+        return label, name
+
+   
+
+            # """ 3) Entity Linking """
+            # for entity in doc.ents:
+            #     label = entity.label_
+            #     name = entity.text.rstrip().replace("'s","").replace("´s","")
+            #     if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+            #         continue
+                
+                
+                
+                
+            #     candidate = link_entity(label, name,score_margin,diff_margin)
+            #     if not candidate:
+            #         continue
+            #     print([key, name ,candidate[2]])
+            #     tsv_writer.writerow([key, name ,candidate[2]])
+
 
 
 def main():
@@ -133,8 +152,7 @@ def main():
 
     # Process the HTML files
     warc = warc.map(html2text)
-
-    # rdd = rdd.flatMap(find_mentions)
+    warc = rdd.map(find_mentions)
 
     print(warc.collect())
 
