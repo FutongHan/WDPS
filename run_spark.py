@@ -16,7 +16,7 @@ nlp = spacy.load("en_core_web_lg")
 
 _, DOMAIN_ES, DOMAIN_KB = sys.argv
 
-INFILE = 'data/sample.warc.gz'
+INFILE = 'hdfs:///user/bbkruit/sample.warc.gz'
 out_file = 'output.tsv'
 
 sc = SparkContext("yarn", "wdps1911")
@@ -84,7 +84,7 @@ def candidate_entity_recognization(record):
     key = find_key(record)  # The filename we need to output
 
     if not key:
-        continue
+        return
 
     """ 1) HTML processing """
     html = html2text(record)
@@ -93,7 +93,7 @@ def candidate_entity_recognization(record):
     doc = nlp(html)
     # No entity in the document, proceed to next doc
     if doc.ents == ():
-        continue
+        return
     for X in doc.ents:
         yield (X.text, X.label_)
             

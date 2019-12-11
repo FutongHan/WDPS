@@ -35,14 +35,9 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 PYSPARK_PYTHON=./.env/bin/python3
 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./.env/bin/python3 \
---conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
---conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
---master yarn \
---deploy-mode cluster \
 --num-executors 16 \
 --executor-memory 4G \
-spark_test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+run_spark.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
