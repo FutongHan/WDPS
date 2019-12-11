@@ -198,7 +198,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
 
         #     linked_list.append([key, name, candidate[2]])
 
-        return linked_list
+        return 'ya'
 
     return process_partition
 
