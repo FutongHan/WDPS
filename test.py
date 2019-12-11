@@ -142,10 +142,10 @@ def find_mentions(record):
 def main():
     conf = SparkConf()
     conf.set("spark.ui.showConsoleProgress", "false")
-    conf.set("spark.driver.memory", "5g")
-    conf.set('spark.executor.memory', '2g')
-    conf.set('spark.executor.cores', '4')
-    
+    conf.set("spark.driver.memory", "15g")
+    # conf.set('spark.executor.memory', '2g')
+    # conf.set('spark.executor.cores', '4')
+
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
     # Read the Warc file to rdd
