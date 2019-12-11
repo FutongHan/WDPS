@@ -32,8 +32,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # Entity recognition and linking
 # python run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
-hadoop fs -rm -r output.tsv
-export SPARK_DIST_CLASSPATH=$(hadoop classpath)
 
 PYSPARK_PYTHON=./.env/bin/python3
 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
