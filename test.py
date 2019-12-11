@@ -60,7 +60,7 @@ def record2html(record):
 
 
 def html2text(record):
-    # html_doc = record2html(record)
+    html_doc = record2html(record)
     # # Rule = "/<.*>/";
     # useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
     #                 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
@@ -102,13 +102,15 @@ def main():
     conf = SparkConf().set("spark.ui.showConsoleProgress", "false")
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
+    # Read the Warc file to rdd
     rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    # rdd = rdd.flatMap(html2text)
+    # Process the HTML files
+    rdd = rdd.flatMap(html2text)
 
     print(rdd.collect())
 
