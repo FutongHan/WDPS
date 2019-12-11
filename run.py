@@ -187,7 +187,7 @@ def run(DOMAIN_ES, DOMAIN_KB):
             # No entity in the document, proceed to next doc
             if doc.ents == ():
                 continue
-
+            
             """ 3) Entity Linking """
             for entity in doc.ents:
                 label = entity.label_

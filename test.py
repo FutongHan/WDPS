@@ -102,41 +102,6 @@ def html2text(record):
     return ""
 
 
-# def find_mentions(record):
-#     _, record = record
-
-#     doc = nlp(record)
-
-#     # No entity in the document, proceed to next doc
-#     if doc.ents == ():
-#         return
-
-#     """ 3) Entity Linking """
-#     for entity in doc.ents:
-#         label = entity.label_
-#         name = entity.text.rstrip().replace("'s", "").replace("´s", "")
-#         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
-#             continue
-#         return label, name
-
-            # """ 3) Entity Linking """
-            # for entity in doc.ents:
-            #     label = entity.label_
-            #     name = entity.text.rstrip().replace("'s","").replace("´s","")
-            #     if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-            #         continue
-
-            #     candidate = link_entity(label, name,score_margin,diff_margin)
-            #     if not candidate:
-            #         continue
-            #     print([key, name ,candidate[2]])
-            #     tsv_writer.writerow([key, name ,candidate[2]])
-
-
-
-
-
-
 ##### ENTITY CANDIDATE GENERATION #####
 def generate_entities(domain, query, size):
     url = 'http://%s/freebase/label/_search' % domain
@@ -154,12 +119,11 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
-
-
-
 #### ENTITY RANKING + LINKING #########
-def link_entity(label, name,score_margin,diff_margin):
-    print("name,label",name,label)
+
+
+def link_entity(label, name, score_margin, diff_margin):
+    print("name,label", name, label)
 
     # Candidate generation using Elasticsearch
     nr_of_candidates = 100
@@ -184,19 +148,19 @@ def link_entity(label, name,score_margin,diff_margin):
         return candidates[0]
 
     for match in exact_matches:
-        freebaseID = match[2][1:].replace("/",".")
+        freebaseID = match[2][1:].replace("/", ".")
         if(sparql(DOMAIN_KB, freebaseID, label)):
             return match
 
     return candidates[0]
 
 
-
-
-
 def process(DOMAIN_ES, DOMAIN_KB):
     def process_partition(warc):
         _, record = warc
+
+        score_margin = 4
+        diff_margin = 1
 
         # Get the key for the output
         key = find_key(record)
@@ -208,53 +172,35 @@ def process(DOMAIN_ES, DOMAIN_KB):
         """ 1) HTML processing """
         html = html2text(record)
 
-        return html
+        """ 2) SpaCy NER """
+        doc = nlp(html)
+
+        # No entity in the document, proceed to next record
+        if doc.ents == ():
+            return
+
+        # Get the mentions in the document
+        linked_list = []
+        for mention in doc.ents:
+            label = mention.label_
+            name = mention.text.rstrip().replace("'s", "").replace("´s", "")
+
+            if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+                continue
+
+            """ 3) Entitiy Linking """
+            # 3.1 Get candidates
+            candidate = link_entity(label, name, score_margin, diff_margin)
+
+            # No candidates
+            if not candidate:
+                continue
+
+            linked_list.append([key, name, candidate[2]])
+
+        return linked_list
 
     return process_partition
-
-
-
-# def process(warc):
-#     _, record = warc
-
-#     # Get the key for the output
-#     key = find_key(record)
-
-#     # No key, process the next record
-#     if not key:
-#         return
-
-#     """ 1) HTML processing """
-#     html = html2text(record)
-
-#     """ 2) SpaCy NER """
-#     doc = nlp(html)
-
-#     # No entity in the document, proceed to next record
-#     if doc.ents == ():
-#         return
-
-#     # Get the mentions in the document
-#     for mention in doc.ents:
-#         label = mention.label_
-#         name = mention.text.rstrip().replace("'s", "").replace("´s", "")
-
-#         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
-#             continue
-
-#         """ 3) Entitiy Linking """
-#         # 3.1 Get candidates
-#         candidate = link_entity(label, name,score_margin,diff_margin)
-
-#         # No candidates
-#         if not candidate:
-#             continue
-        
-
-#         print([key, name ,candidate[2]])
-#         tsv_writer.writerow([key, name ,candidate[2]])
-
-
 
 
 def parallelize(DOMAIN_ES, DOMAIN_KB):
@@ -268,10 +214,10 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
 
     # Read the Warc file to rdd
     warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
-                              "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
-                              "org.apache.hadoop.io.LongWritable",
-                              "org.apache.hadoop.io.Text",
-                              conf={"textinputformat.record.delimiter": "WARC/1.0"})
+                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
+                               "org.apache.hadoop.io.LongWritable",
+                               "org.apache.hadoop.io.Text",
+                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the warc files
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
@@ -279,15 +225,11 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
 
     print('success')
 
-
-
-
     # # Process the HTML files
     # step1 = warc.map(html2text)
     # step2 = step1.map(find_mentions)
 
     # # print(warc.collect())
-
 
 
 if __name__ == "__main__":
