@@ -179,24 +179,24 @@ def process(DOMAIN_ES, DOMAIN_KB):
         if doc.ents == ():
             return
 
-        # Get the mentions in the document
-        linked_list = []
-        for mention in doc.ents:
-            label = mention.label_
-            name = mention.text.rstrip().replace("'s", "").replace("´s", "")
+        # # Get the mentions in the document
+        # linked_list = []
+        # for mention in doc.ents:
+        #     label = mention.label_
+        #     name = mention.text.rstrip().replace("'s", "").replace("´s", "")
 
-            if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
-                continue
+        #     if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+        #         continue
 
-            """ 3) Entitiy Linking """
-            # 3.1 Get candidates
-            candidate = link_entity(label, name, score_margin, diff_margin)
+        #     """ 3) Entitiy Linking """
+        #     # 3.1 Get candidates
+        #     candidate = link_entity(label, name, score_margin, diff_margin)
 
-            # No candidates
-            if not candidate:
-                continue
+        #     # No candidates
+        #     if not candidate:
+        #         continue
 
-            linked_list.append([key, name, candidate[2]])
+        #     linked_list.append([key, name, candidate[2]])
 
         return linked_list
 
@@ -222,9 +222,9 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
 
     # Create one list of links
-    flattened_result = result.flatMap(lambda xs: [x for x in xs])
+    # flattened_result = result.flatMap(lambda xs: [x for x in xs])
 
-    print(flattened_result.take(10))
+    print(result.take(10))
     # flattened_result.take(100).foreach(println)
 
     # Save to file
