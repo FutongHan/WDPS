@@ -108,7 +108,7 @@ def main():
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    rdd = rdd.flatMap(html2text)
+    # rdd = rdd.flatMap(html2text)
 
     print(rdd.collect())
 
