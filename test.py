@@ -138,8 +138,48 @@ def find_mentions(record):
             #     tsv_writer.writerow([key, name ,candidate[2]])
 
 
+def process(warc):
+    _, record = warc
 
-def main():
+    # Get the key for the output
+    key = find_key(record)
+
+    # No key, process the next record
+    if not key:
+        return
+    
+    """ 1) HTML processing """
+    html = html2text(record)
+
+    """ 2) SpaCy NER """
+    doc = nlp(html)
+
+    # No entity in the document, proceed to next record
+    if doc.ents == ():
+        return
+
+    test = [entity.label_ for entity in doc.ents]
+
+    return test
+
+
+    # """ 3) Entity Linking """
+    # for entity in doc.ents:
+    #     label = entity.label_
+    #     name = entity.text.rstrip().replace("'s","").replace("´s","")
+        
+    #     if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+    #         continue
+
+
+
+
+
+
+
+
+
+def parallelize():
     conf = SparkConf()
     conf.set("spark.ui.showConsoleProgress", "false")
     conf.set("spark.driver.memory", "15g")
@@ -155,23 +195,24 @@ def main():
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    # Process the HTML files
-    step1 = warc.map(html2text)
-    step2 = step1.map(find_mentions)
-
-    # print(warc.collect())
-
+    # Process the warc files
+    result = warc.map(process)
 
     print('success')
 
-    # """ 1) HTML processing """
-    #         html = html2text(record)
 
-    #         """ 2) SpaCy NER """
-    #         doc = nlp(html)
+
+
+    # # Process the HTML files
+    # step1 = warc.map(html2text)
+    # step2 = step1.map(find_mentions)
+
+    # # print(warc.collect())
+
+
 
 if __name__ == "__main__":
-    main()
+    parallelize()
 
 
 # def delayed(seconds):
