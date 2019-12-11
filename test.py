@@ -92,7 +92,7 @@ def html2text(record):
     #     # soup_sec = BeautifulSoup(text,"html.parser")
 
 
-        yield text
+        # yield text
     yield ""
 
 
