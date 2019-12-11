@@ -221,7 +221,7 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
 
     # Process the warc files
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
-    # print(result.take(10))
+    print(result.take(2))
 
     print('success')
 
