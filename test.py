@@ -101,13 +101,13 @@ def main():
     conf = SparkConf().set("spark.ui.showConsoleProgress", "false")
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
-    WARC_RDD = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    text_RDD = rdd.flatMap(html2text)
+    rdd = rdd.flatMap(html2text)
 
     print('success')
 
