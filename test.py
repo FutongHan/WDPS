@@ -26,28 +26,101 @@ if sys.version >= '3':
 else:
     import Queue
 
+##### HTML PROCESSING #####
+def split_records(stream):
+    payload = ''
+    for line in stream:
+        if line.strip() == "WARC/1.0":
+            yield payload
+            payload = ''
+        else:
+            payload += line
+
+
+def find_key(payload):
+    key = None
+    for line in payload.splitlines():
+        if line.startswith("WARC-TREC-ID"):
+            key = line.split(': ')[1]
+            return key
+    return ''
+
+
+def record2html(record):
+    # find html in warc file
+    ishtml = False
+    html = ""
+    for line in record.splitlines():
+        # html starts with <html
+        if line.startswith("<html"):
+            ishtml = True
+        if ishtml:
+            html += line
+    return html
+
+
+def html2text(record):
+    html_doc = record2html(record)
+    # Rule = "/<.*>/";
+    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
+                    'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
+    if html_doc:
+        soup = BeautifulSoup(html_doc, "html.parser")
+        # remove tags: <script> <style> <code> <title> <head>
+        [s.extract() for s in soup(
+            ['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
+        # remove tags id= useless_tags
+        [s.extract() for s in soup.find_all(id=useless_tags)]
+        # remove tags class = useless_tags
+        [s.extract() for s in soup.find_all(
+            name='div', attrs={"class": useless_tags})]
+        # remove comments
+        for element in soup(s=lambda s: isinstance(s, Comment)):
+            element.extract()
+        # text = soup.get_text("\n", strip=True)
+
+        # get text in <p></p>
+        paragraph = soup.find_all("p")
+        text = ""
+        for p in paragraph:
+            if p.get_text(" ", strip=True) != '':
+                text += p.get_text(" ", strip=True)+"\n"
+        if text == "":
+            text = soup.get_text(" ", strip=True)
+        # text = re.sub(Rule, "", text)
+        # escape character
+        # soup_sec = BeautifulSoup(text,"html.parser")
+
+        yield text
+    yield ""
+
+
+
 
 def main():
     conf = SparkConf().set("spark.ui.showConsoleProgress", "false")
-    # conf.set("textinputformat.record.delimiter", "WARC/1.0")
-
-    # sc.newAPIHadoopFile(
-    #     path,
-    #     'org.apache.hadoop.mapreduce.lib.input.TextInputFormat',
-    #     'org.apache.hadoop.io.LongWritable',
-    #     'org.apache.hadoop.io.Text',
-    #     conf={'textinputformat.record.delimiter': '\n\n\n'}
-    # )
-
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
-    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+    WARC_RDD = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    print('succes')
+    text_RDD = rdd.flatMap(html2text)
+
+    print('success')
+
+
+    # """ 1) HTML processing """
+    #         html = html2text(record)
+
+    #         """ 2) SpaCy NER """
+    #         doc = nlp(html)
+
+if __name__ == "__main__":
+    main()
+    
 
 
 # def delayed(seconds):
@@ -90,5 +163,4 @@ def main():
 
 #     print("Job results are:", result.get())
 #     sc.stop()
-if __name__ == "__main__":
-    main()
+
