@@ -84,7 +84,7 @@ def candidate_entity_recognization(record):
     key = find_key(record)  # The filename we need to output
 
     if not key:
-        continue
+        return
 
     """ 1) HTML processing """
     html = html2text(record)
@@ -93,7 +93,7 @@ def candidate_entity_recognization(record):
     doc = nlp(html)
     # No entity in the document, proceed to next doc
     if doc.ents == ():
-        continue
+        return
     for X in doc.ents:
         yield (X.text, X.label_)
             
