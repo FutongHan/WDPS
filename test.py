@@ -128,14 +128,14 @@ def main():
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
     # Read the Warc file to rdd
-    warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the HTML files
-    warc.map(test)
+    rdd = rdd.map(test)
 
     # rdd = rdd.flatMap(find_mentions)
 
