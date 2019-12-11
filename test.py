@@ -25,6 +25,13 @@ if sys.version >= '3':
     import queue as Queue
 else:
     import Queue
+    
+from bs4 import BeautifulSoup, Comment
+import spacy
+import csv
+nlp = spacy.load("en_core_web_lg")
+
+
 
 ##### HTML PROCESSING #####
 def split_records(stream):
