@@ -156,10 +156,10 @@ def main():
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the HTML files
-    warc = warc.map(html2text)
-    warc = warc.map(find_mentions)
+    step1 = warc.map(html2text)
+    step2 = warc.map(find_mentions)
 
-    print(warc.collect())
+    # print(warc.collect())
 
 
     print('success')
