@@ -102,22 +102,22 @@ def html2text(record):
     yield ""
 
 
-def find_mentions(record):
-    _, record = record
+# def find_mentions(record):
+#     _, record = record
 
-    doc = nlp(record)
+#     doc = nlp(record)
 
-    # No entity in the document, proceed to next doc
-    if doc.ents == ():
-        yield ""
+#     # No entity in the document, proceed to next doc
+#     if doc.ents == ():
+#         yield ""
 
-    """ 3) Entity Linking """
-    for entity in doc.ents:
-        label = entity.label_
-        name = entity.text.rstrip().replace("'s", "").replace("´s","")
-        if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-            continue
-        yield label, name
+#     """ 3) Entity Linking """
+#     for entity in doc.ents:
+#         label = entity.label_
+#         name = entity.text.rstrip().replace("'s", "").replace("´s","")
+#         if(label in ["TIME", "DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
+#             continue
+#         yield label, name
 
 def test(record):
 
