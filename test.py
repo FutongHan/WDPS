@@ -135,7 +135,7 @@ def main():
     # Process the HTML files
     rdd = rdd.flatMap(html2text)
 
-    rdd =
+    rdd = rdd.flatMap(find_mentions)
 
     print(rdd.collect())
 
