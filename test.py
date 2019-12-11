@@ -111,7 +111,7 @@ def main():
 
     rdd = rdd.flatMap(html2text)
 
-    rdd = rdd.saveAsTextFile('testfile.txt')
+    print(rdd.collect())
 
     
 
