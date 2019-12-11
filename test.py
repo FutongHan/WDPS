@@ -157,7 +157,7 @@ def main():
 
     # Process the HTML files
     step1 = warc.map(html2text)
-    step2 = warc.map(find_mentions)
+    step2 = step1.map(find_mentions)
 
     # print(warc.collect())
 
