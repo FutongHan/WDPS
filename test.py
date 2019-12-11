@@ -41,12 +41,12 @@ def main():
 
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
-    rdd = sc.newAPIHadoopFile('WDPS2019/data/sample.warc.gz',
+    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
-   
+
     print('succes')
 
 
