@@ -189,7 +189,7 @@ def run(record):
     key = find_key(record)  # The filename we need to output
 
     if not key:
-        continue
+        return
 
     """ 1) HTML processing """
     html = html2text(record)
@@ -198,16 +198,16 @@ def run(record):
     doc = nlp(html)
     # No entity in the document, proceed to next doc
     if doc.ents == ():
-        continue    
+        return    
     """ 3) Entity Linking """
     for entity in doc.ents:
         label = entity.label_
         name = entity.text.rstrip().replace("'s","").replace("´s","")
         if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-            continue
+            return
         candidate = link_entity(label, name,score_margin,diff_margin)
         if not candidate:
-            continue
+            return
         yield([key, name ,candidate[2]])
 #       tsv_writer.writerow([key, name ,candidate[2]])
 
