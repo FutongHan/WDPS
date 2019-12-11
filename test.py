@@ -196,7 +196,19 @@ def link_entity(label, name,score_margin,diff_margin):
 
 def process(DOMAIN_ES, DOMAIN_KB):
     def process_partition(warc):
+        _, record = warc
 
+        # Get the key for the output
+        key = find_key(record)
+
+        # No key, process the next record
+        if not key:
+            return
+
+        """ 1) HTML processing """
+        html = html2text(record)
+
+        return html
 
     return process_partition
 
