@@ -32,74 +32,74 @@ else:
 nlp = spacy.load("en_core_web_lg")
 
 
-##### HTML PROCESSING #####
-def split_records(stream):
-    payload = ''
-    for line in stream:
-        if line.strip() == "WARC/1.0":
-            yield payload
-            payload = ''
-        else:
-            payload += line
+# ##### HTML PROCESSING #####
+# def split_records(stream):
+#     payload = ''
+#     for line in stream:
+#         if line.strip() == "WARC/1.0":
+#             yield payload
+#             payload = ''
+#         else:
+#             payload += line
 
 
-def find_key(payload):
-    key = None
-    for line in payload.splitlines():
-        if line.startswith("WARC-TREC-ID"):
-            key = line.split(': ')[1]
-            return key
-    return ''
+# def find_key(payload):
+#     key = None
+#     for line in payload.splitlines():
+#         if line.startswith("WARC-TREC-ID"):
+#             key = line.split(': ')[1]
+#             return key
+#     return ''
 
 
-def record2html(record):
-    # find html in warc file
-    ishtml = False
-    html = ""
-    for line in record.splitlines():
-        # html starts with <html
-        if line.startswith("<html"):
-            ishtml = True
-        if ishtml:
-            html += line
-    return html
+# def record2html(record):
+#     # find html in warc file
+#     ishtml = False
+#     html = ""
+#     for line in record.splitlines():
+#         # html starts with <html
+#         if line.startswith("<html"):
+#             ishtml = True
+#         if ishtml:
+#             html += line
+#     return html
 
 
-def html2text(record):
-    _, record = record
-    html_doc = record2html(record)
-    # Rule = "/<.*>/";
-    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
-                    'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
-    if html_doc:
-        soup = BeautifulSoup(html_doc, "html.parser")
-        # remove tags: <script> <style> <code> <title> <head>
-        [s.extract() for s in soup(
-            ['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
-        # remove tags id= useless_tags
-        [s.extract() for s in soup.find_all(id=useless_tags)]
-        # remove tags class = useless_tags
-        [s.extract() for s in soup.find_all(
-            name='div', attrs={"class": useless_tags})]
-        # remove comments
-        for element in soup(s=lambda s: isinstance(s, Comment)):
-            element.extract()
-        # text = soup.get_text("\n", strip=True)
+# def html2text(record):
+#     _, record = record
+#     html_doc = record2html(record)
+#     # Rule = "/<.*>/";
+#     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
+#                     'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
+#     if html_doc:
+#         soup = BeautifulSoup(html_doc, "html.parser")
+#         # remove tags: <script> <style> <code> <title> <head>
+#         [s.extract() for s in soup(
+#             ['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
+#         # remove tags id= useless_tags
+#         [s.extract() for s in soup.find_all(id=useless_tags)]
+#         # remove tags class = useless_tags
+#         [s.extract() for s in soup.find_all(
+#             name='div', attrs={"class": useless_tags})]
+#         # remove comments
+#         for element in soup(s=lambda s: isinstance(s, Comment)):
+#             element.extract()
+#         # text = soup.get_text("\n", strip=True)
 
-        # get text in <p></p>
-        paragraph = soup.find_all("p")
-        text = ""
-        for p in paragraph:
-            if p.get_text(" ", strip=True) != '':
-                text += p.get_text(" ", strip=True)+"\n"
-        if text == "":
-            text = soup.get_text(" ", strip=True)
-        # text = re.sub(Rule, "", text)
-        # escape character
-        # soup_sec = BeautifulSoup(text,"html.parser")
+#         # get text in <p></p>
+#         paragraph = soup.find_all("p")
+#         text = ""
+#         for p in paragraph:
+#             if p.get_text(" ", strip=True) != '':
+#                 text += p.get_text(" ", strip=True)+"\n"
+#         if text == "":
+#             text = soup.get_text(" ", strip=True)
+#         # text = re.sub(Rule, "", text)
+#         # escape character
+#         # soup_sec = BeautifulSoup(text,"html.parser")
 
-        yield text
-    yield ""
+#         yield text
+#     yield ""
 
 
 # def find_mentions(record):
@@ -120,11 +120,8 @@ def html2text(record):
 #         yield label, name
 
 def test(record):
-
+    print('yo')
     return record
-
-
-
 
 def main():
     conf = SparkConf().set("spark.ui.showConsoleProgress", "false")
@@ -138,7 +135,7 @@ def main():
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the HTML files
-    warc.map(html2text)
+    warc.map(test)
 
     # rdd = rdd.flatMap(find_mentions)
 
