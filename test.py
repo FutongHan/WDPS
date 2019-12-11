@@ -197,7 +197,7 @@ def parallelize():
 
     # Process the warc files
     result = warc.map(process)
-    print(result.collect())
+    print(result.take(100))
 
     print('success')
 
