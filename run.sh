@@ -44,7 +44,7 @@ PYSPARK_PYTHON=./.env/bin/python3
 --deploy-mode cluster \
 --num-executors 16 \
 --executor-memory 4G \
-run_spark.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+spark_test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
