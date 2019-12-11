@@ -119,6 +119,11 @@ def find_mentions(record):
             continue
         yield label, name
 
+def test(record):
+
+    return record
+
+
 
 
 def main():
@@ -126,16 +131,16 @@ def main():
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
     # Read the Warc file to rdd
-    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+    warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the HTML files
-    rdd = rdd.flatMap(html2text)
+    warc.map(html2text)
 
-    rdd = rdd.flatMap(find_mentions)
+    # rdd = rdd.flatMap(find_mentions)
 
     print(rdd.collect())
 
