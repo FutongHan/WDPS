@@ -140,7 +140,12 @@ def find_mentions(record):
 
 
 def main():
-    conf = SparkConf().set("spark.ui.showConsoleProgress", "false")
+    conf = SparkConf()
+    conf.set("spark.ui.showConsoleProgress", "false")
+    conf.set("spark.driver.memory", "5g")
+    conf.set('spark.executor.memory', '2g')
+    conf.set('spark.executor.cores', '4')
+    
     sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
 
     # Read the Warc file to rdd
@@ -149,7 +154,7 @@ def main():
                               "org.apache.hadoop.io.LongWritable",
                               "org.apache.hadoop.io.Text",
                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
-                              
+
     # Process the HTML files
     warc = warc.map(html2text)
     warc = warc.map(find_mentions)
