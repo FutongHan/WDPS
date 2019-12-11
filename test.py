@@ -224,8 +224,11 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
     # Create one list of links
     flattened_result = result.flatMap(lambda xs: [x for x in xs])
 
+    print(flattened_result.take(10))
+    # flattened_result.take(100).foreach(println)
+
     # Save to file
-    flattened_result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
+    # flattened_result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
 
     print('success')
 
