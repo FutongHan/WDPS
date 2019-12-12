@@ -31,7 +31,7 @@ KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
 # Start Spart and the Entity Recognition + Entity Linking process
-prun /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit --executor-memory 4G test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+prun -np 8 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit --executor-memory 4G test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
