@@ -240,8 +240,8 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
-    print(result.take(10))
-    # result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
+    # print(result.take(10))
+    result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
 	
     print('success')
 
