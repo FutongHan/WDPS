@@ -30,10 +30,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 # Start Spart and the Entity Recognition + Entity Linking process
 prun -o .spark_log -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---driver-memory 8G \
---executor-memory 8G \
---num-executors 8 \
---conf spark.ui.showConsoleProgress=true \
 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
