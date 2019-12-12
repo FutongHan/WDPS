@@ -29,7 +29,7 @@ if sys.version >= '3':
 else:
     import Queue
 
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
 
 
 ##### HTML PROCESSING #####
