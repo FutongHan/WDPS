@@ -8,14 +8,9 @@ import requests
 import json
 import time
 import threading
-import sys
-if sys.version >= '3':
-    import queue as Queue
-else:
-    import Queue
 
 # Load SpaCy language pack, "en_core_web_lg" will give memory issues for spark
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_lg")
 
 
 ##### HTML PROCESSING #####
