@@ -160,7 +160,7 @@ def sparql(domain, freebaseID, label):
 
 
 def link_entity(label, name, score_margin, diff_margin):
-    print("name,label", name, label)
+    # print("name,label", name, label)
 
     # Candidate generation using Elasticsearch
     nr_of_candidates = 100
@@ -259,9 +259,9 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
 
     # Create one list of links
-    # flattened_result = result.flatMap(lambda xs: [x for x in xs])
+    flattened_result = result.flatMap(lambda xs: [x for x in xs])
 
-    print(result.take(10))
+    print(flattened_result.take(10))
     # flattened_result.take(100).foreach(println)
 
     # Save to file
