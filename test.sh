@@ -38,11 +38,8 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 hdfs dfs -rm -r /user/wdps1911/sample
 
-PYSPARK_PYTHON=$(readlink -f $(which python))
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=$PYSPARK_PYTHON \
---master yarn \
---deploy-mode client \
+--master local[4] \
 --driver-memory 8G \
 --executor-memory 8G \
 --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
