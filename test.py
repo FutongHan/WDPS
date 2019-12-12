@@ -1,20 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from __future__ import print_function
 
 import csv
@@ -31,6 +14,7 @@ if sys.version >= '3':
 else:
     import Queue
 
+# Load SpaCy language pack, "en_core_web_lg" will give memory issues for spark
 nlp = spacy.load("en_core_web_sm")
 
 
@@ -121,6 +105,7 @@ def generate_entities(domain, query, size):
 
     return id_labels
 
+
 #### ENTITY RANKING + LINKING #########
 def sparql(domain, freebaseID, label):
     url = 'http://%s/sparql' % domain
@@ -158,7 +143,6 @@ def sparql(domain, freebaseID, label):
             raise e
 
 
-
 def link_entity(label, name, score_margin, diff_margin):
     # print("name,label", name, label)
 
@@ -192,6 +176,7 @@ def link_entity(label, name, score_margin, diff_margin):
     return candidates[0]
 
 
+# Spark will handle this function on the cluster
 def process(DOMAIN_ES, DOMAIN_KB):
     def process_partition(warc):
         _, record = warc
@@ -233,15 +218,14 @@ def process(DOMAIN_ES, DOMAIN_KB):
             if not candidate:
                 continue
 
+            # Yield all the linked entities
             yield key + '\t' + name + '\t' + candidate[2]
-
-            # linked_list.append((key, name, candidate[2]))
-
-        # return linked_list
 
     return process_partition
 
-def parallelize(DOMAIN_ES, DOMAIN_KB):
+
+def setup_spark(DOMAIN_ES, DOMAIN_KB):
+    # Spark setup
     conf = SparkConf()
     conf.set("spark.ui.showConsoleProgress", "false")
     conf.set("spark.driver.memory", "15g")
@@ -257,28 +241,12 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
                                "org.apache.hadoop.io.Text",
                                conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
-    # Process the warc files, result is a list of the output variables: key, name, FreebaseID
+    # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
-    # Create one list of links
-    # flattened_result = result.flatMap(lambda xs: [x for x in xs if xs != None])
-
-    print(result.take(10))
+    # print(result.take(10))
     result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
-
-
-    # flattened_result.take(100).foreach(println)
-
-    # Save to file
-    # flattened_result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
-
     print('success')
-
-    # # Process the HTML files
-    # step1 = warc.map(html2text)
-    # step2 = step1.map(find_mentions)
-
-    # # print(warc.collect())
 
 
 if __name__ == "__main__":
@@ -288,7 +256,7 @@ if __name__ == "__main__":
         print('Usage: /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit test.py DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    parallelize(DOMAIN_ES, DOMAIN_KB)
+    setup_spark(DOMAIN_ES, DOMAIN_KB)
 
 
 # def delayed(seconds):

@@ -1,3 +1,5 @@
+# We need to reserve our own node??? Can someone add that!? Longer than 15 mins pls
+
 # Activate the virtual env
 source .env/bin/activate
 module load prun
