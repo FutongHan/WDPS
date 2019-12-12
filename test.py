@@ -259,7 +259,7 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
     result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
 
     # Create one list of links
-    flattened_result = result.flatMap(lambda xs: [x for x in xs])
+    flattened_result = result.flatMap(lambda xs: [x for x in xs if xs != None])
 
     print(flattened_result.take(10))
     # flattened_result.take(100).foreach(println)
