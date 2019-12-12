@@ -42,6 +42,7 @@ prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submi
 --master local[4] \
 --driver-memory 8G \
 --executor-memory 8G \
+--conf spark.ui.showConsoleProgress=False \
 --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 hdfs dfs -copyToLocal /user/wdps1911/sample /home/wdps1911/sample
