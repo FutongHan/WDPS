@@ -62,9 +62,7 @@ def html2text(record):
         # remove comments
         for element in soup(s=lambda s: isinstance(s, Comment)):
             element.extract()
-        # text = soup.get_text("\n", strip=True)
 
-        # get text in <p></p>
         paragraph = soup.find_all("p")
         text = ""
         for p in paragraph:
@@ -215,13 +213,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
 
 def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Spark setup
-    conf = SparkConf()
-    conf.set("spark.ui.showConsoleProgress", "false")
-    conf.set("spark.driver.memory", "15g")
-    # conf.set('spark.executor.memory', '2g')
-    # conf.set('spark.executor.cores', '4')
-
-    sc = SparkContext(appName="PythonStatusAPIDemo", conf=conf)
+    sc = SparkContext()
 
     # Read the Warc file to rdd
     warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
@@ -233,7 +225,7 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
-    # print(result.take(10))
+    print(result.take(10))
     result = result.saveAsTextFile('sample2')
 	
     print('success')
