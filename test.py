@@ -173,7 +173,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
         html = html2text(record)
 
         """ 2) SpaCy NER """
-        # doc = nlp(html)
+        doc = nlp(html)
 
         # # No entity in the document, proceed to next record
         # if doc.ents == ():
