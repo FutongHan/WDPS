@@ -8,6 +8,7 @@ import requests
 import json
 import time
 import threading
+import sys
 
 # Load SpaCy language pack, "en_core_web_lg" will give memory issues for spark
 nlp = spacy.load("en_core_web_lg")
