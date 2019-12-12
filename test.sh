@@ -40,7 +40,7 @@ hdfs dfs -rm -r /user/wdps1911/sample
 
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
 --master yarn \
---deploy-mode cluster \
+--deploy-mode client \
 --driver-memory 8G \
 --executor-memory 8G \
 --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
