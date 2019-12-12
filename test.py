@@ -264,7 +264,7 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
     # flattened_result = result.flatMap(lambda xs: [x for x in xs if xs != None])
 
     print(result.take(10))
-    flattened_result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
+    result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
 
 
     # flattened_result.take(100).foreach(println)
