@@ -226,7 +226,7 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     print(result.take(10))
-    result = result.saveAsTextFile('sample2')
+    result = result.saveAsTextFile('sample')
 	
     print('success')
 

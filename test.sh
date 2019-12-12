@@ -32,6 +32,9 @@ KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
 # Start Spart and the Entity Recognition + Entity Linking process
+
+hdfs dfs -rm -r /user/wdps1911/sample
+
 prun -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
 --master local[4] \
 --driver-memory 8G \
