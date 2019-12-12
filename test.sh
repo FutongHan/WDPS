@@ -38,6 +38,7 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 hdfs dfs -rm -r /user/wdps1911/sample
 
+PYSPARK_PYTHON=$(readlink -f $(which python))
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
 --master yarn \
 --deploy-mode client \
