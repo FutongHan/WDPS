@@ -50,19 +50,15 @@ def record2html(record):
 def html2text(record):
     # _, record = record
     html_doc = record2html(record)
-    # Rule = "/<.*>/";
-    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
-                    'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
+    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
     if html_doc:
         soup = BeautifulSoup(html_doc, "html.parser")
         # remove tags: <script> <style> <code> <title> <head>
-        [s.extract() for s in soup(
-            ['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
+        [s.extract() for s in soup(['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
         # remove tags id= useless_tags
         [s.extract() for s in soup.find_all(id=useless_tags)]
         # remove tags class = useless_tags
-        [s.extract() for s in soup.find_all(
-            name='div', attrs={"class": useless_tags})]
+        [s.extract() for s in soup.find_all(name='div', attrs={"class": useless_tags})]
         # remove comments
         for element in soup(s=lambda s: isinstance(s, Comment)):
             element.extract()
@@ -76,9 +72,6 @@ def html2text(record):
                 text += p.get_text(" ", strip=True)+"\n"
         if text == "":
             text = soup.get_text(" ", strip=True)
-        # text = re.sub(Rule, "", text)
-        # escape character
-        # soup_sec = BeautifulSoup(text,"html.parser")
 
         return text
     return ""
@@ -241,7 +234,7 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     # print(result.take(10))
-    result = result.saveAsTextFile('sample')
+    result = result.saveAsTextFile('sample2')
 	
     print('success')
 
@@ -250,7 +243,7 @@ if __name__ == "__main__":
     try:
         _, DOMAIN_ES, DOMAIN_KB = sys.argv
     except Exception:
-        print('Usage: /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit test.py DOMAIN_ES, DOMAIN_TRIDENT')
+        print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
     setup_spark(DOMAIN_ES, DOMAIN_KB)
