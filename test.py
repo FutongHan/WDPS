@@ -122,6 +122,41 @@ def generate_entities(domain, query, size):
     return id_labels
 
 #### ENTITY RANKING + LINKING #########
+def sparql(domain, freebaseID, label):
+    url = 'http://%s/sparql' % domain
+    query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
+    response = requests.post(url, data={'print': True, 'query': query})
+    if response:
+        try:
+            response = response.json()
+            if label == "PERSON" and "people." in json.dumps(response, indent=2):
+                return True
+            if label == "NORP" and "organisation" in json.dumps(response, indent=2):
+                return True
+            if label == "FAC" and "" in json.dumps(response, indent=2):
+                return True
+            if label == "ORG" and "organisation." in json.dumps(response, indent=2):
+                return True
+            if label == "GPE" and "location." in json.dumps(response, indent=2):
+                return True
+            if label == "LOC" and "location." in json.dumps(response, indent=2):
+                return True
+            if label == "PRODUCT" and "" in json.dumps(response, indent=2):
+                return True
+            if label == "EVENT" and "event." in json.dumps(response, indent=2):
+                return True
+            if label == "WORK_OF_ART" and "" in json.dumps(response, indent=2):
+                return True
+            if label == "LAW" and "law." in json.dumps(response, indent=2):
+                return True
+            if label == "LANGUAGE" and "language." in json.dumps(response, indent=2):
+                return True
+            return False
+
+        except Exception as e:
+            print('error')
+            raise e
+
 
 
 def link_entity(label, name, score_margin, diff_margin):
