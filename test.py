@@ -213,7 +213,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
 
 def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Spark setup
-    sc = SparkContext()
+    sc = new SparkContext(new SparkConf())
 
     # Read the Warc file to rdd
     warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
