@@ -217,7 +217,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
             return
 
         # Get the mentions in the document
-        linked_list = []
+        # linked_list = []
         for mention in doc.ents:
             label = mention.label_
             name = mention.text.rstrip().replace("'s", "").replace("´s", "")
@@ -233,9 +233,11 @@ def process(DOMAIN_ES, DOMAIN_KB):
             if not candidate:
                 continue
 
-            linked_list.append((key, name, candidate[2]))
+            yield (key, name, candidate[2])
 
-        return linked_list
+            # linked_list.append((key, name, candidate[2]))
+
+        # return linked_list
 
     return process_partition
 
@@ -256,12 +258,12 @@ def parallelize(DOMAIN_ES, DOMAIN_KB):
                                conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the warc files, result is a list of the output variables: key, name, FreebaseID
-    result = warc.map(process(DOMAIN_ES, DOMAIN_KB))
+    result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     # Create one list of links
-    flattened_result = result.flatMap(lambda xs: [x for x in xs if xs != None])
+    # flattened_result = result.flatMap(lambda xs: [x for x in xs if xs != None])
 
-    print(flattened_result.take(10))
+    print(result.take(10))
     # flattened_result.take(100).foreach(println)
 
     # Save to file
