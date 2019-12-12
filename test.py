@@ -241,7 +241,7 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     # print(result.take(10))
-    result.saveAsTextFile('hdfs:///user/wdps1911/WDPS2019/data/test.tsv')
+    result = result.saveAsTextFile('sample')
 	
     print('success')
 
