@@ -39,7 +39,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 hdfs dfs -rm -r /user/wdps1911/sample
 
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
-#--master local[4] \
 --master yarn \
 --deploy-mode cluster \
 --driver-memory 8G \
