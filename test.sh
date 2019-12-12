@@ -1,7 +1,10 @@
+# We need to reserve our own node??? Can someone add that!? Longer than 15 mins pls
+
 # Activate the virtual env
 source .env/bin/activate
 module load prun
 export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
+
 
 # Start Elasticsearch server
 ES_PORT=9200
@@ -15,6 +18,7 @@ ES_PID=$!
 until [ -n "$(cat .es_log* | grep YELLOW)" ]; do sleep 1; done
 echo "elasticsearch should be running now on node $ES_NODE:$ES_PORT (connected to process $ES_PID)"
 
+# TODO: Start Trident server
 ############################
 KB_PORT=9090
 KB_BIN=/home/jurbani/trident/build/trident
@@ -29,8 +33,7 @@ KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
 # Start Spart and the Entity Recognition + Entity Linking process
-prun -o .spark_log -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
-test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+prun -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit --driver-memory 8G --executor-memory 8G --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
