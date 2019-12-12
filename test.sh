@@ -5,7 +5,6 @@ source .env/bin/activate
 module load prun
 export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
 
-
 # Start Elasticsearch server
 ES_PORT=9200
 ES_BIN=/home/wdps1911/prof/wdps/elasticsearch-2.4.1/bin/elasticsearch
@@ -33,7 +32,8 @@ KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
 # Start Spart and the Entity Recognition + Entity Linking process
-prun -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit --driver-memory 8G --executor-memory 8G --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+prun -np 1 /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
+--driver-memory 8G --executor-memory 8G --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 # Stop Trident server
 kill $KB_PID
