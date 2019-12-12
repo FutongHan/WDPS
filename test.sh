@@ -40,7 +40,7 @@ hdfs dfs -rm -r /user/wdps1911/sample
 
 PYSPARK_PYTHON=$(readlink -f $(which python))
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=$PYSPARK_PYTHON
+--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=$PYSPARK_PYTHON \
 --master yarn \
 --deploy-mode client \
 --driver-memory 8G \
