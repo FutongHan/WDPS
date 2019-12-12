@@ -233,7 +233,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
             if not candidate:
                 continue
 
-            linked_list.append([key, name, candidate[2]])
+            linked_list.append((key, name, candidate[2]))
 
         return linked_list
 
