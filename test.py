@@ -21,6 +21,8 @@ import csv
 import spacy
 from bs4 import BeautifulSoup, Comment
 from pyspark import SparkConf, SparkContext
+import requests
+import json
 import time
 import threading
 import sys
