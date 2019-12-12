@@ -3,6 +3,7 @@
 # Activate the virtual env
 source .env/bin/activate
 module load prun
+export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
 
 # Start Elasticsearch server
 ES_PORT=9200
