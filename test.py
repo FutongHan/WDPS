@@ -66,7 +66,7 @@ def record2html(record):
 
 
 def html2text(record):
-    _, record = record
+    # _, record = record
     html_doc = record2html(record)
     # Rule = "/<.*>/";
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
