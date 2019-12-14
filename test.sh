@@ -4,7 +4,6 @@ module load prun
 module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
-export HADOOP_OPTS="$HADOOP_OPTS -Djava.library.path=$HADOOP_HOME/lib/native"
 
 TIME=30:00
 
@@ -47,7 +46,6 @@ prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submi
 --master local[4] \
 --driver-memory 8G \
 --executor-memory 8G \
---conf spark.ui.showConsoleProgress=True \
 --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
