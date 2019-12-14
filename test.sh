@@ -2,7 +2,7 @@
 source .env/bin/activate
 module load prun
 module load hadoop
-export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
+export SPARK_HOME=/home/wdps1911/spark
 
 TIME=30:00
 
