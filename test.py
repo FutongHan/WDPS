@@ -35,11 +35,11 @@ def html2text(record):
     for line in record.splitlines():
         if line.startswith("WARC-TREC-ID"):
             key = line.split(': ')[1]
-    
+
     # No key, process the next record
     if not key:
         return
-    
+
     html_doc = record2html(record)
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
     if html_doc:
@@ -121,8 +121,8 @@ def sparql(domain, freebaseID, label):
             raise e
 
 
-def link_entity(label, name):
-    # print("name,label", name, label)
+def link_entity(record):
+    key, name, label = record
 
     # Candidate generation using Elasticsearch
     nr_of_candidates = 100
@@ -131,27 +131,27 @@ def link_entity(label, name):
     exact_matches = []
 
     if not candidates:
-        return None
+        return
 
     if label != "PERSON" and candidates[0][1] < 4:
-        return None
+        return
 
     if label == "PERSON" and candidates[0][1] < 1.5:
-        return None
+        return
 
     for candidate in candidates:
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
 
     if not exact_matches:
-        return candidates[0]
+        yield key, name, candidates[0][2]
 
     for match in exact_matches:
         freebaseID = match[2][1:].replace("/", ".")
         if(sparql(DOMAIN_KB, freebaseID, label)):
-            return match
+            yield key, name, match[2]
 
-    return candidates[0]
+    yield key, name, candidates[0][2]
 
 def named_entity_recognition(record):
     key, html = record
@@ -163,37 +163,12 @@ def named_entity_recognition(record):
 
         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
             continue
-        
+
         yield key, name, label
 
-
-# Spark will handle this function on the cluster
-def process(DOMAIN_ES, DOMAIN_KB):
-    def process_partition(warc):
-        key, name, label = warc
-
-        """ 2) SpaCy NER """
-        
-
-        # No entity in the document, proceed to next record
-
-
-        # Get the mentions in the document
-        # linked_list = []
-
-
-        """ 3) Entitiy Linking """
-        # 3.1 Get candidates
-        candidate = link_entity(label, name)
-
-        # No candidates
-        if not candidate:
-            return
-
-        # Yield all the linked entities
-        yield key + '\t' + name + '\t' + candidate[2]
-
-    return process_partition
+def output(record):
+    key, name, entity_id = record
+    yield key + '\t' + name + '\t' + entity_id
 
 
 def setup_spark(DOMAIN_ES, DOMAIN_KB):
@@ -210,11 +185,12 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     warc = warc.flatMap(html2text)
     warc = warc.flatMap(named_entity_recognition)
-    result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
+    warc = warc.faltMap(link_entity)
+    warc = warc.faltMap(output)
 
-    print(result.take(10))
-    #result = result.saveAsTextFile('sample')
-    
+    print(warc.take(10))
+    #result = warc.saveAsTextFile('sample')
+
     print('success')
 
 
