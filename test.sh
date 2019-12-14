@@ -4,6 +4,7 @@ module load prun
 module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
+export HADOOP_OPTS="$HADOOP_OPTS -Djava.library.path=$HADOOP_HOME/lib/native"
 
 TIME=30:00
 

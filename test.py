@@ -1,4 +1,3 @@
-import spacy
 from bs4 import BeautifulSoup, Comment
 from pyspark import SparkContext
 import requests
