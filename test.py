@@ -10,30 +10,10 @@ import time
 import threading
 import sys
 
-# Load SpaCy language pack, "en_core_web_lg" will give memory issues for spark
-nlp = spacy.load("en_core_web_md")
+nlp = spacy.load("en_core_web_sm")
 
 
 ##### HTML PROCESSING #####
-def split_records(stream):
-    payload = ''
-    for line in stream:
-        if line.strip() == "WARC/1.0":
-            yield payload
-            payload = ''
-        else:
-            payload += line
-
-
-def find_key(payload):
-    key = None
-    for line in payload.splitlines():
-        if line.startswith("WARC-TREC-ID"):
-            key = line.split(': ')[1]
-            return key
-    return ''
-
-
 def record2html(record):
     # find html in warc file
     ishtml = False
@@ -48,7 +28,18 @@ def record2html(record):
 
 
 def html2text(record):
-    # _, record = record
+    _, record = record
+
+    # Get the key for the output
+    key = ''
+    for line in record.splitlines():
+        if line.startswith("WARC-TREC-ID"):
+            key = line.split(': ')[1]
+    
+    # No key, process the next record
+    if not key:
+        yield '',''
+    
     html_doc = record2html(record)
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
     if html_doc:
@@ -71,8 +62,8 @@ def html2text(record):
         if text == "":
             text = soup.get_text(" ", strip=True)
 
-        return text
-    return ""
+        yield key, text
+    yield '',''
 
 
 ##### ENTITY CANDIDATE GENERATION #####
@@ -166,20 +157,10 @@ def link_entity(label, name, score_margin, diff_margin):
 # Spark will handle this function on the cluster
 def process(DOMAIN_ES, DOMAIN_KB):
     def process_partition(warc):
-        _, record = warc
+        key, html = warc
 
         score_margin = 4
         diff_margin = 1
-
-        # Get the key for the output
-        key = find_key(record)
-
-        # No key, process the next record
-        if not key:
-            return
-
-        """ 1) HTML processing """
-        html = html2text(record)
 
         """ 2) SpaCy NER """
         doc = nlp(html)
@@ -223,11 +204,13 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
                                conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
+    warc = warc.flatMap(html2text)
+    warc = 
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
-    #print(result.take(10))
-    result = result.saveAsTextFile('sample')
-	
+    print(result.take(10))
+    #result = result.saveAsTextFile('sample')
+    
     print('success')
 
 
