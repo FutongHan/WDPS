@@ -154,17 +154,17 @@ def link_entity(label, name):
     return candidates[0]
 
 def named_entity_recognition(record):
-	key, html = record
-	doc = nlp(html)
+    key, html = record
+    doc = nlp(html)
 
-	for mention in doc.ents:
+    for mention in doc.ents:
         label = mention.label_
         name = mention.text.rstrip().replace("'s", "").replace("´s", "")
 
         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
             continue
-		
-		yield key, name, label
+        
+        yield key, name, label
 
 
 # Spark will handle this function on the cluster
@@ -209,7 +209,7 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     warc = warc.flatMap(html2text)
-	warc = warc.flatMap(named_entity_recognition)
+    warc = warc.flatMap(named_entity_recognition)
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     print(result.take(10))
