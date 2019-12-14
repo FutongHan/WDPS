@@ -43,10 +43,10 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---master local[8] \
+--master local[16] \
 --driver-memory 8G \
 --executor-memory 8G \
---num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
+--num-executors 16 run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
 
