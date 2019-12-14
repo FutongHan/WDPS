@@ -1,13 +1,8 @@
-from __future__ import print_function
-
-import csv
 import spacy
 from bs4 import BeautifulSoup, Comment
-from pyspark import SparkConf, SparkContext
+from pyspark import SparkContext
 import requests
 import json
-import time
-import threading
 import sys
 
 nlp = spacy.load("en_core_web_sm")
@@ -65,11 +60,27 @@ def html2text(record):
         yield key, text
     return
 
+##### ENTITY RECOGNITION #####
+def named_entity_recognition(record):
+    key, html = record
+    doc = nlp(html)
+
+    for mention in doc.ents:
+        label = mention.label_
+        name = mention.text.rstrip().replace("'s", "").replace("´s", "")
+
+        if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+            continue
+
+        yield key, name, label
 
 ##### ENTITY CANDIDATE GENERATION #####
-def generate_entities(domain, query, size):
-    url = 'http://%s/freebase/label/_search' % domain
-    response = requests.get(url, params={'q': query, 'size': size})
+def generate_candidates(record):
+    key, name, label = record
+    nr_of_candidates = 100
+
+    url = 'http://%s/freebase/label/_search' % DOMAIN_ES
+    response = requests.get(url, params={'q': name, 'size': nr_of_candidates})
     id_labels = []
     if response:
         response = response.json()
@@ -81,12 +92,40 @@ def generate_entities(domain, query, size):
 
             id_labels.append((freebase_label, freebase_score, freebase_id))
 
-    return id_labels
+    yield key, name, label, id_labels
 
 
 #### ENTITY RANKING + LINKING #########
-def sparql(domain, freebaseID, label):
-    url = 'http://%s/sparql' % domain
+def link_entity(record):
+    key, name, label, candidates = record
+
+    exact_matches = []
+
+    if not candidates:
+        return
+
+    if label != "PERSON" and candidates[0][1] < 4:
+        return
+
+    if label == "PERSON" and candidates[0][1] < 1.5:
+        return
+
+    for candidate in candidates:
+        if name.lower() == candidate[0].lower():
+            exact_matches.append(candidate)
+
+    if not exact_matches:
+        yield key, name, candidates[0][2]
+
+    for match in exact_matches:
+        freebaseID = match[2][1:].replace("/", ".")
+        if(sparql_query(freebaseID, label)):
+            yield key, name, match[2]
+
+    yield key, name, candidates[0][2]
+
+def sparql_query(freebaseID, label):
+    url = 'http://%s/sparql' % DOMAIN_KB
     query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
@@ -121,78 +160,9 @@ def sparql(domain, freebaseID, label):
             raise e
 
 
-def link_entity(record):
-    key, name, label = record
-
-    # Candidate generation using Elasticsearch
-    nr_of_candidates = 100
-    candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
-
-    exact_matches = []
-
-    if not candidates:
-        return
-
-    if label != "PERSON" and candidates[0][1] < 4:
-        return
-
-    if label == "PERSON" and candidates[0][1] < 1.5:
-        return
-
-    for candidate in candidates:
-        if name.lower() == candidate[0].lower():
-            exact_matches.append(candidate)
-
-    if not exact_matches:
-        yield key, name, candidates[0][2]
-
-    for match in exact_matches:
-        freebaseID = match[2][1:].replace("/", ".")
-        if(sparql(DOMAIN_KB, freebaseID, label)):
-            yield key, name, match[2]
-
-    yield key, name, candidates[0][2]
-
-def named_entity_recognition(record):
-    key, html = record
-    doc = nlp(html)
-
-    for mention in doc.ents:
-        label = mention.label_
-        name = mention.text.rstrip().replace("'s", "").replace("´s", "")
-
-        if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
-            continue
-
-        yield key, name, label
-
 def output(record):
     key, name, entity_id = record
     yield key + '\t' + name + '\t' + entity_id
-
-
-def setup_spark(DOMAIN_ES, DOMAIN_KB):
-    # Spark setup
-    sc = SparkContext()
-
-    # Read the Warc file to rdd
-    warc = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
-                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
-                               "org.apache.hadoop.io.LongWritable",
-                               "org.apache.hadoop.io.Text",
-                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
-
-    # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
-    warc = warc.flatMap(html2text)
-    warc = warc.flatMap(named_entity_recognition)
-    warc = warc.flatMap(link_entity)
-    warc = warc.flatMap(output)
-
-    print(warc.take(10))
-    #result = warc.saveAsTextFile('sample')
-
-    print('success')
-
 
 if __name__ == "__main__":
     try:
@@ -201,4 +171,22 @@ if __name__ == "__main__":
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    setup_spark(DOMAIN_ES, DOMAIN_KB)
+    # Spark setup with conf from command line
+    sc = SparkContext()
+
+    # Read the Warc file to rdd
+    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
+                               "org.apache.hadoop.io.LongWritable",
+                               "org.apache.hadoop.io.Text",
+                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
+
+    # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
+    rdd = rdd.flatMap(html2text)
+    rdd = rdd.flatMap(named_entity_recognition)
+    rdd = rdd.flatMap(generate_candidates)
+    rdd = rdd.flatMap(link_entity)
+    rdd = rdd.flatMap(output)
+
+    print(rdd.take(10))
+    #result = rdd.saveAsTextFile('sample')
