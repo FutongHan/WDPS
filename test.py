@@ -181,7 +181,6 @@ if __name__ == "__main__":
     rdd = rdd.flatMap(html_to_text)
     rdd = rdd.flatMap(named_entity_recognition)
     rdd = rdd.flatMap(generate_candidates)
-    rdd = rdd.flatMap(link_entity)
     rdd = rdd.flatMap(output)
 
     print(rdd.take(10))
