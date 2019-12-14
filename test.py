@@ -4,12 +4,10 @@ from pyspark import SparkContext
 import requests
 import json
 import sys
-
-nlp = spacy.load("en_core_web_sm")
-
+import en_core_web_lg
 
 ##### HTML PROCESSING #####
-def record2html(record):
+def record_to_html(record):
     _, record = record
 
     # find html in warc file
@@ -36,7 +34,7 @@ def record2html(record):
     yield key, html
 
 
-def html2text(record):
+def html_to_text(record):
     key, html = record
 
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
@@ -64,6 +62,7 @@ def html2text(record):
 ##### ENTITY RECOGNITION #####
 def named_entity_recognition(record):
     key, html = record
+    nlp = en_core_web_lg.load()
     doc = nlp(html)
 
     for mention in doc.ents:
@@ -167,17 +166,18 @@ if __name__ == "__main__":
 
     # Spark setup with conf from command line
     sc = SparkContext()
+    # split WARC
+    conf = {"textinputformat.record.delimiter": "WARC/1.0"}
 
     # Read the Warc file to rdd
     rdd = sc.newAPIHadoopFile(INPUT,
                                "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                                "org.apache.hadoop.io.LongWritable",
-                               "org.apache.hadoop.io.Text",
-                               conf={"textinputformat.record.delimiter": "WARC/1.0"})
+                               "org.apache.hadoop.io.Text", conf)
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
-    rdd = rdd.flatMap(record2html)
-    rdd = rdd.flatMap(html2text)
+    rdd = rdd.flatMap(record_to_html)
+    rdd = rdd.flatMap(html_to_text)
     rdd = rdd.flatMap(named_entity_recognition)
     rdd = rdd.flatMap(generate_candidates)
     rdd = rdd.flatMap(link_entity)
