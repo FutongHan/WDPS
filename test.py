@@ -167,13 +167,13 @@ if __name__ == "__main__":
     # Spark setup with conf from command line
     sc = SparkContext()
     # split WARC
-    conf = {"textinputformat.record.delimiter": "WARC/1.0"}
+    config = {"textinputformat.record.delimiter": "WARC/1.0"}
 
     # Read the Warc file to rdd
     rdd = sc.newAPIHadoopFile(INPUT,
                                "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                                "org.apache.hadoop.io.LongWritable",
-                               "org.apache.hadoop.io.Text", conf)
+                               "org.apache.hadoop.io.Text", conf=config)
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     rdd = rdd.flatMap(record_to_html)
