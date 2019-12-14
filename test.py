@@ -188,7 +188,7 @@ def process(DOMAIN_ES, DOMAIN_KB):
 
         # No candidates
         if not candidate:
-            continue
+            return
 
         # Yield all the linked entities
         yield key + '\t' + name + '\t' + candidate[2]
