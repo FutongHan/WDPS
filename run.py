@@ -1,33 +1,14 @@
-import sys
-import gzip
+from bs4 import BeautifulSoup, Comment
+from pyspark import SparkContext
 import requests
 import json
-from bs4 import BeautifulSoup, Comment
+import sys
 import spacy
-import csv
-nlp = spacy.load("en_core_web_lg")
 
 ##### HTML PROCESSING #####
-def split_records(stream):
-    payload = ''
-    for line in stream:
-        if line.strip() == "WARC/1.0":
-            yield payload
-            payload = ''
-        else:
-            payload += line
+def record_to_html(record):
+    _, record = record
 
-
-def find_key(payload):
-    key = None
-    for line in payload.splitlines():
-        if line.startswith("WARC-TREC-ID"):
-            key = line.split(': ')[1]
-            return key
-    return ''
-
-
-def record2html(record):
     # find html in warc file
     ishtml = False
     html = ""
@@ -37,49 +18,66 @@ def record2html(record):
             ishtml = True
         if ishtml:
             html += line
-    return html
+    if not html:
+        return
+
+    # Get the key for the output
+    key = ''
+    for line in record.splitlines():
+        if line.startswith("WARC-TREC-ID"):
+            key = line.split(': ')[1]
+            break
+    if not key:
+        return
+
+    yield key, html
 
 
-def html2text(record):
-    html_doc = record2html(record)
-    # Rule = "/<.*>/";
-    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right',
-                    'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
-    if html_doc:
-        soup = BeautifulSoup(html_doc, "html.parser")
-        # remove tags: <script> <style> <code> <title> <head>
-        [s.extract() for s in soup(
-            ['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
-        # remove tags id= useless_tags
-        [s.extract() for s in soup.find_all(id=useless_tags)]
-        # remove tags class = useless_tags
-        [s.extract() for s in soup.find_all(
-            name='div', attrs={"class": useless_tags})]
-        # remove comments
-        for element in soup(s=lambda s: isinstance(s, Comment)):
-            element.extract()
-        # text = soup.get_text("\n", strip=True)
+def html_to_text(record):
+    key, html = record
 
-        # get text in <p></p>
-        paragraph = soup.find_all("p")
-        text = ""
-        for p in paragraph:
-            if p.get_text(" ", strip=True) != '':
-                text += p.get_text(" ", strip=True)+"\n"
-        if text == "":
-            text = soup.get_text(" ", strip=True)
-        # text = re.sub(Rule, "", text)
-        # escape character
-        # soup_sec = BeautifulSoup(text,"html.parser")
+    useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
+    soup = BeautifulSoup(html, "html.parser")
+    # remove tags: <script> <style> <code> <title> <head>
+    [s.extract() for s in soup(['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
+    # remove tags id= useless_tags
+    [s.extract() for s in soup.find_all(id=useless_tags)]
+    # remove tags class = useless_tags
+    [s.extract() for s in soup.find_all(name='div', attrs={"class": useless_tags})]
+    # remove comments
+    for element in soup(s=lambda s: isinstance(s, Comment)):
+        element.extract()
 
-        return text
-    return ""
+    paragraph = soup.find_all("p")
+    text = ""
+    for p in paragraph:
+        if p.get_text(" ", strip=True) != '':
+            text += p.get_text(" ", strip=True)+"\n"
+    if text == "":
+        text = soup.get_text(" ", strip=True)
 
+    yield key, text
+
+##### ENTITY RECOGNITION #####
+def named_entity_recognition(record):
+    key, html = record
+    doc = SPACY(html)
+
+    for mention in doc.ents:
+        label = mention.label_
+        name = mention.text.rstrip().replace("'s", "").replace("´s", "")
+        if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
+            continue
+
+        yield key, name, label
 
 ##### ENTITY CANDIDATE GENERATION #####
-def generate_entities(domain, query, size):
-    url = 'http://%s/freebase/label/_search' % domain
-    response = requests.get(url, params={'q': query, 'size': size})
+def generate_candidates(record):
+    key, name, label = record
+    nr_of_candidates = 100
+
+    url = 'http://%s/freebase/label/_search' % DOMAIN_ES
+    response = requests.get(url, params={'q': name, 'size': nr_of_candidates})
     id_labels = []
     if response:
         response = response.json()
@@ -88,14 +86,39 @@ def generate_entities(domain, query, size):
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score', {})
-
             id_labels.append((freebase_label, freebase_score, freebase_id))
 
-    return id_labels
+    entity = link_entity(name, label, id_labels)
+    if not entity:
+        return
+    yield key, name, entity[2]
 
-##### ENTITY LINKING USING TRIDENT #####
-def sparql(domain, freebaseID, label):
-    url = 'http://%s/sparql' % domain
+
+#### ENTITY RANKING + LINKING #########
+def link_entity(name, label, candidates):
+    exact_matches = []
+
+    if not candidates:
+        return
+    if label != "PERSON" and candidates[0][1] < 4:
+        return
+    if label == "PERSON" and candidates[0][1] < 1.5:
+        return
+
+    for candidate in candidates:
+        if name.lower() == candidate[0].lower():
+            exact_matches.append(candidate)
+    if not exact_matches:
+        return candidates[0]
+    for match in exact_matches:
+        freebaseID = match[2][1:].replace("/", ".")
+        if(sparql_query(freebaseID, label)):
+            return match
+
+    return candidates[0]
+
+def sparql_query(freebaseID, label):
+    url = 'http://%s/sparql' % DOMAIN_KB
     query = "select * where {<http://rdf.freebase.com/ns/%s> <http://rdf.freebase.com/ns/type.object.type> ?o} limit 100" % freebaseID
     response = requests.post(url, data={'print': True, 'query': query})
     if response:
@@ -129,82 +152,36 @@ def sparql(domain, freebaseID, label):
             print('error')
             raise e
 
-def link_entity(label, name,score_margin,diff_margin):
-    print("name,label",name,label)
+def output(record):
+    key, name, entity_id = record
+    yield key + '\t' + name + '\t' + entity_id
 
-    # Candidate generation using Elasticsearch
-    nr_of_candidates = 100
-    candidates = generate_entities(DOMAIN_ES, name, nr_of_candidates)
-
-    exact_matches = []
-
-    if not candidates:
-        return None
-
-    if label != "PERSON" and candidates[0][1] < 4:
-        return None
-
-    if label == "PERSON" and candidates[0][1] < 1.5:
-        return None
-
-    for candidate in candidates:
-        if name.lower() == candidate[0].lower():
-            exact_matches.append(candidate)
-
-    if not exact_matches:
-        return candidates[0]
-
-    for match in exact_matches:
-        freebaseID = match[2][1:].replace("/",".")
-        if(sparql(DOMAIN_KB, freebaseID, label)):
-            return match
-
-    return candidates[0]
-
-##### MAIN PROGRAM #####
-def run(DOMAIN_ES, DOMAIN_KB):
-    score_margin = 4
-    diff_margin = 1
-    # Read warc file
-    warcfile = gzip.open('data/sample.warc.gz', "rt", errors="ignore")
-
-
-    with open('output.tsv', 'w+') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter='\t')
-
-        for record in split_records(warcfile):
-            key = find_key(record)  # The filename we need to output
-
-            if not key:
-                continue
-
-            """ 1) HTML processing """
-            html = html2text(record)
-
-            """ 2) SpaCy NER """
-            doc = nlp(html)
-
-            # No entity in the document, proceed to next doc
-            if doc.ents == ():
-                continue
-            
-            """ 3) Entity Linking """
-            for entity in doc.ents:
-                label = entity.label_
-                name = entity.text.rstrip().replace("'s","").replace("´s","")
-                if(label in ["TIME","DATE","PERCENT","MONEY","QUANTITY","ORDINAL","CARDINAL","EVENT"]):
-                    continue
-                candidate = link_entity(label, name,score_margin,diff_margin)
-                if not candidate:
-                    continue
-                print([key, name ,candidate[2]])
-                tsv_writer.writerow([key, name ,candidate[2]])
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
-        _, DOMAIN_ES, DOMAIN_KB = sys.argv
+        _, DOMAIN_ES, DOMAIN_KB, INPUT, OUTPUT = sys.argv
     except Exception:
-        print('Usage: python start.py DOMAIN_ES, DOMAIN_TRIDENT')
+        print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    run(DOMAIN_ES, DOMAIN_KB)
+    SPACY = spacy.load("en_core_web_sm")
+
+    # Spark setup with conf from command line
+    sc = SparkContext()
+    # split WARC
+    config = {"textinputformat.record.delimiter": "WARC/1.0"}
+
+    # Read the Warc file to rdd
+    rdd = sc.newAPIHadoopFile(INPUT,
+                               "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
+                               "org.apache.hadoop.io.LongWritable",
+                               "org.apache.hadoop.io.Text", conf=config)
+
+    # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
+    rdd = rdd.flatMap(record_to_html)
+    rdd = rdd.flatMap(html_to_text)
+    rdd = rdd.flatMap(named_entity_recognition)
+    rdd = rdd.flatMap(generate_candidates)
+    rdd = rdd.flatMap(output)
+
+    #print(rdd.take(10))
+    result = rdd.saveAsTextFile(OUTPUT)
