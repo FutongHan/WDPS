@@ -3,7 +3,7 @@ from pyspark import SparkContext
 import requests
 import json
 import sys
-import en_core_web_sm
+import en_core_web_lg
 
 ##### HTML PROCESSING #####
 def record_to_html(record):
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    SPACY = en_core_web_sm.load()
+    SPACY = en_core_web_lg.load()
 
     # Spark setup with conf from command line
     sc = SparkContext()
