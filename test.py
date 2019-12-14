@@ -162,7 +162,7 @@ if __name__ == "__main__":
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
 
-    SPACY = spacy.load("en_core_web_lg")
+    SPACY = spacy.load("en_core_web_sm")
 
     # Spark setup with conf from command line
     sc = SparkContext()
