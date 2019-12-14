@@ -185,8 +185,8 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     warc = warc.flatMap(html2text)
     warc = warc.flatMap(named_entity_recognition)
-    warc = warc.faltMap(link_entity)
-    warc = warc.faltMap(output)
+    warc = warc.flatMap(link_entity)
+    warc = warc.flatMap(output)
 
     print(warc.take(10))
     #result = warc.saveAsTextFile('sample')
