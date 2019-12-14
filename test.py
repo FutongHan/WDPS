@@ -205,7 +205,6 @@ def setup_spark(DOMAIN_ES, DOMAIN_KB):
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
     warc = warc.flatMap(html2text)
-    warc = 
     result = warc.flatMap(process(DOMAIN_ES, DOMAIN_KB))
 
     print(result.take(10))
