@@ -5,7 +5,7 @@ import requests
 import json
 import sys
 
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_lg")
 
 
 ##### HTML PROCESSING #####
@@ -21,6 +21,8 @@ def record2html(record):
             ishtml = True
         if ishtml:
             html += line
+    if not html:
+        return
 
     # Get the key for the output
     key = ''
@@ -28,11 +30,7 @@ def record2html(record):
         if line.startswith("WARC-TREC-ID"):
             key = line.split(': ')[1]
             break
-    # No key, process the next record
     if not key:
-        return
-
-    if not html:
         return
 
     yield key, html
@@ -71,7 +69,6 @@ def named_entity_recognition(record):
     for mention in doc.ents:
         label = mention.label_
         name = mention.text.rstrip().replace("'s", "").replace("´s", "")
-
         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
             continue
 
@@ -92,7 +89,6 @@ def generate_candidates(record):
             freebase_label = hit.get('_source', {}).get('label')
             freebase_id = hit.get('_source', {}).get('resource')
             freebase_score = hit.get('_score', {})
-
             id_labels.append((freebase_label, freebase_score, freebase_id))
 
     yield key, name, label, id_labels
@@ -106,20 +102,16 @@ def link_entity(record):
 
     if not candidates:
         return
-
     if label != "PERSON" and candidates[0][1] < 4:
         return
-
     if label == "PERSON" and candidates[0][1] < 1.5:
         return
 
     for candidate in candidates:
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
-
     if not exact_matches:
         yield key, name, candidates[0][2]
-
     for match in exact_matches:
         freebaseID = match[2][1:].replace("/", ".")
         if(sparql_query(freebaseID, label)):
@@ -162,14 +154,13 @@ def sparql_query(freebaseID, label):
             print('error')
             raise e
 
-
 def output(record):
     key, name, entity_id = record
     yield key + '\t' + name + '\t' + entity_id
 
 if __name__ == "__main__":
     try:
-        _, DOMAIN_ES, DOMAIN_KB = sys.argv
+        _, DOMAIN_ES, DOMAIN_KB, INPUT, OUTPUT = sys.argv
     except Exception:
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
@@ -178,7 +169,7 @@ if __name__ == "__main__":
     sc = SparkContext()
 
     # Read the Warc file to rdd
-    rdd = sc.newAPIHadoopFile('hdfs:///user/bbkruit/sample.warc.gz',
+    rdd = sc.newAPIHadoopFile(INPUT,
                                "org.apache.hadoop.mapreduce.lib.input.TextInputFormat",
                                "org.apache.hadoop.io.LongWritable",
                                "org.apache.hadoop.io.Text",
@@ -193,4 +184,4 @@ if __name__ == "__main__":
     rdd = rdd.flatMap(output)
 
     print(rdd.take(10))
-    #result = rdd.saveAsTextFile('sample')
+    #result = rdd.saveAsTextFile(OUTPUT)

@@ -3,8 +3,13 @@ source .env/bin/activate
 module load prun
 module load hadoop
 export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
-hdfs dfs -rm -r /user/wdps1911/sample
+
 TIME=30:00
+
+INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
+OUTPUT=${2:-"output"}
+
+hdfs dfs -rm -r /user/wdps1911/$OUTPUT
 
 # Start Elasticsearch server
 ############################
@@ -41,9 +46,9 @@ prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submi
 --driver-memory 8G \
 --executor-memory 8G \
 --conf spark.ui.showConsoleProgress=True \
---num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
+--num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
-hdfs dfs -copyToLocal /user/wdps1911/sample /home/wdps1911/sample
+hdfs dfs -copyToLocal /user/wdps1911/$OUTPUT /home/wdps1911/$OUTPUT
 
 # Stop Trident server
 kill $KB_PID
