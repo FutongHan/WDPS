@@ -3,6 +3,7 @@ source .env/bin/activate
 module load prun
 module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
+export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 
 TIME=30:00
 
