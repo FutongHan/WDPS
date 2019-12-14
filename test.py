@@ -10,6 +10,8 @@ nlp = spacy.load("en_core_web_sm")
 
 ##### HTML PROCESSING #####
 def record2html(record):
+    _, record = record
+
     # find html in warc file
     ishtml = False
     html = ""
@@ -19,46 +21,47 @@ def record2html(record):
             ishtml = True
         if ishtml:
             html += line
-    return html
-
-
-def html2text(record):
-    _, record = record
 
     # Get the key for the output
     key = ''
     for line in record.splitlines():
         if line.startswith("WARC-TREC-ID"):
             key = line.split(': ')[1]
-
+            break
     # No key, process the next record
     if not key:
         return
 
-    html_doc = record2html(record)
+    if not html:
+        return
+
+    yield key, html
+
+
+def html2text(record):
+    key, html = record
+
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
-    if html_doc:
-        soup = BeautifulSoup(html_doc, "html.parser")
-        # remove tags: <script> <style> <code> <title> <head>
-        [s.extract() for s in soup(['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
-        # remove tags id= useless_tags
-        [s.extract() for s in soup.find_all(id=useless_tags)]
-        # remove tags class = useless_tags
-        [s.extract() for s in soup.find_all(name='div', attrs={"class": useless_tags})]
-        # remove comments
-        for element in soup(s=lambda s: isinstance(s, Comment)):
-            element.extract()
+    soup = BeautifulSoup(html, "html.parser")
+    # remove tags: <script> <style> <code> <title> <head>
+    [s.extract() for s in soup(['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
+    # remove tags id= useless_tags
+    [s.extract() for s in soup.find_all(id=useless_tags)]
+    # remove tags class = useless_tags
+    [s.extract() for s in soup.find_all(name='div', attrs={"class": useless_tags})]
+    # remove comments
+    for element in soup(s=lambda s: isinstance(s, Comment)):
+        element.extract()
 
-        paragraph = soup.find_all("p")
-        text = ""
-        for p in paragraph:
-            if p.get_text(" ", strip=True) != '':
-                text += p.get_text(" ", strip=True)+"\n"
-        if text == "":
-            text = soup.get_text(" ", strip=True)
+    paragraph = soup.find_all("p")
+    text = ""
+    for p in paragraph:
+        if p.get_text(" ", strip=True) != '':
+            text += p.get_text(" ", strip=True)+"\n"
+    if text == "":
+        text = soup.get_text(" ", strip=True)
 
-        yield key, text
-    return
+    yield key, text
 
 ##### ENTITY RECOGNITION #####
 def named_entity_recognition(record):
@@ -182,6 +185,7 @@ if __name__ == "__main__":
                                conf={"textinputformat.record.delimiter": "WARC/1.0"})
 
     # Process the warc files, result is an rdd with each element "key + '\t' + name + '\t' + FreebaseID"
+    rdd = rdd.flatMap(record2html)
     rdd = rdd.flatMap(html2text)
     rdd = rdd.flatMap(named_entity_recognition)
     rdd = rdd.flatMap(generate_candidates)

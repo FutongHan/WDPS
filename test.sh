@@ -1,14 +1,13 @@
-# We need to reserve our own node??? Can someone add that!? Longer than 15 mins pls
-
-# Activate the virtual env
+# Set up
 source .env/bin/activate
 module load prun
 module load hadoop
 export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-without-hadoop
-
+hdfs dfs -rm -r /user/wdps1911/sample
 TIME=30:00
 
 # Start Elasticsearch server
+############################
 ES_PORT=9200
 ES_BIN=/home/wdps1911/prof/wdps/elasticsearch-2.4.1/bin/elasticsearch
 
@@ -34,15 +33,14 @@ sleep 5
 KB_PID=$!
 echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to process $KB_PID)"
 
-# Start Spart and the Entity Recognition + Entity Linking process
-
-hdfs dfs -rm -r /user/wdps1911/sample
+# Start Spark and the Entity Recognition + Entity Linking process
+############################
 
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
 --master local[4] \
 --driver-memory 8G \
 --executor-memory 8G \
---conf spark.ui.showConsoleProgress=False \
+--conf spark.ui.showConsoleProgress=True \
 --num-executors 8 test.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT
 
 hdfs dfs -copyToLocal /user/wdps1911/sample /home/wdps1911/sample
