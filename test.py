@@ -88,13 +88,14 @@ def generate_candidates(record):
             freebase_score = hit.get('_score', {})
             id_labels.append((freebase_label, freebase_score, freebase_id))
 
-    yield key, name, label, id_labels
+    entity = link_entity(name, label, id_labels)
+    if not entity:
+        return
+    yield key, name, entity[2]
 
 
 #### ENTITY RANKING + LINKING #########
-def link_entity(record):
-    key, name, label, candidates = record
-
+def link_entity(name, label, candidates):
     exact_matches = []
 
     if not candidates:
@@ -108,13 +109,13 @@ def link_entity(record):
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
     if not exact_matches:
-        yield key, name, candidates[0][2]
+        return candidates[0]
     for match in exact_matches:
         freebaseID = match[2][1:].replace("/", ".")
         if(sparql_query(freebaseID, label)):
-            yield key, name, match[2]
+            return match
 
-    yield key, name, candidates[0][2]
+    return candidates[0]
 
 def sparql_query(freebaseID, label):
     url = 'http://%s/sparql' % DOMAIN_KB
@@ -183,5 +184,5 @@ if __name__ == "__main__":
     rdd = rdd.flatMap(link_entity)
     rdd = rdd.flatMap(output)
 
-    #print(rdd.take(10))
-    result = rdd.saveAsTextFile(OUTPUT)
+    print(rdd.take(10))
+    #result = rdd.saveAsTextFile(OUTPUT)
