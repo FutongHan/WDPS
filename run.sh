@@ -4,6 +4,7 @@ module load prun
 module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
+export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/venv/bin/python3
 
 TIME=30:00
 
