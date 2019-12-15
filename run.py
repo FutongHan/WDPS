@@ -182,5 +182,5 @@ if __name__ == "__main__":
     rdd = rdd.flatMap(generate_candidates)
     rdd = rdd.flatMap(output)
 
-    print(rdd.take(10))
-    #result = rdd.saveAsTextFile(OUTPUT)
+    #print(rdd.take(10))
+    result = rdd.saveAsTextFile(OUTPUT)
