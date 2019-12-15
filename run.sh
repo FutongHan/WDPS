@@ -12,7 +12,7 @@ INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
 OUTPUT=${2:-"output"}
 
 hdfs dfs -rm -r $OUTPUT
-zip -r venv.zip .env
+#zip -r venv.zip .env
 
 # Start Elasticsearch server
 ############################
