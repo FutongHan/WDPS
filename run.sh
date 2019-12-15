@@ -45,7 +45,7 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # Start Spark and the Entity Recognition + Entity Linking process
 ############################
 
-prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
+PYSPARK_PYTHON=$(readlink -f $(which python)) /home/bbkruit/spark-2.1.2-bin-without-hadoop/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --master yarn \
     --deploy-mode cluster \
@@ -53,7 +53,7 @@ prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
     --executor-memory 4g \
     --executor-cores 1 \
     --archives venv.zip#ENV \
-    $SPARK_HOME/examples/src/main/python/pi.py \
+    /home/bbkruit/spark-2.1.2-bin-without-hadoop/examples/src/main/python/pi.py \
     10
 
 
