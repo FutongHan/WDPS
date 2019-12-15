@@ -46,8 +46,12 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
-    --master local[8] \
+    --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
+    --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
+    --master yarn \
+    --deploy-mode cluster \
     --executor-memory 8G \
+    --driver-memory 8G \
     --num-executors 8 \
     --archives venv.zip#ENV \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
