@@ -45,7 +45,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
-    --class org.apache.spark.examples.SparkPi \
     --master yarn \
     --deploy-mode cluster \
     --driver-memory 4g \
