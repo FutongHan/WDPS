@@ -52,9 +52,7 @@ prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
     --executor-memory 4G \
     --num-executors 16 \
     --archives venv.zip#ENV \
-    $SPARK_HOME/examples/src/main/python/pi.py \
-    10
-
+    run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
 
