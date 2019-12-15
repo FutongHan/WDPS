@@ -1,6 +1,7 @@
 # Set up
 source .env/bin/activate
 module load prun
+module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
@@ -48,8 +49,7 @@ prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
     --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-    --master yarn \
-    --deploy-mode cluster \
+    --master local[8] \
     --executor-memory 8G \
     --driver-memory 8G \
     --num-executors 8 \
