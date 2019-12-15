@@ -5,6 +5,7 @@ module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 TIME=30:00
 
@@ -43,7 +44,8 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # Start Spark and the Entity Recognition + Entity Linking process
 ############################
 
-prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
+prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
+--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=.env/bin/python3 \
 --master yarn \
 --deploy-mode cluster \
 --driver-memory 8G \
