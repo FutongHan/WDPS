@@ -1,5 +1,6 @@
 # Set up
 source .env/bin/activate
+virtualenv --relocatable .env
 module load prun
 module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
@@ -45,13 +46,13 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=ENV/bin/python3 \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --master yarn \
     --deploy-mode cluster \
     --driver-memory 4g \
-    --executor-memory 2g \
+    --executor-memory 4g \
     --executor-cores 1 \
-    --archives env.zip#ENV
+    --archives venv.zip#ENV \
     $SPARK_HOME/examples/src/main/python/pi.py \
     10
 
