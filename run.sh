@@ -5,7 +5,6 @@ module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
-export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 TIME=30:00
 
