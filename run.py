@@ -62,7 +62,6 @@ def html_to_text(record):
 def named_entity_recognition(record):
     key, html = record
     SPACY = spacy.load("en_core_web_lg")
-
     doc = SPACY(html)
 
     for mention in doc.ents:
