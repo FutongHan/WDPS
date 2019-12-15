@@ -1,7 +1,6 @@
 # Set up
 source .env/bin/activate
 module load prun
-module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
@@ -46,10 +45,11 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=$PYSPARK_PYTHON \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --master local[8] \
     --executor-memory 8G \
     --num-executors 8 \
+    --archives venv.zip#ENV \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
