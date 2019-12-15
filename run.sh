@@ -51,7 +51,7 @@ prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
     --driver-memory 4g \
     --executor-memory 2g \
     --executor-cores 1 \
-    $SPARK_HOME/examples/jars/spark-examples*.jar \
+    $SPARK_HOME/examples/src/main/python/pi.py \
     10
 
 
