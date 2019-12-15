@@ -44,7 +44,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME /home/bbkruit/spark-2.4.0-bin-without-hadoop/bin/spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=.env/bin/python3 \
 --master yarn \
 --deploy-mode cluster \
 --driver-memory 8G \
