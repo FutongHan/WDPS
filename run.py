@@ -61,6 +61,8 @@ def html_to_text(record):
 ##### ENTITY RECOGNITION #####
 def named_entity_recognition(record):
     key, html = record
+    SPACY = spacy.load("en_core_web_lg")
+
     doc = SPACY(html)
 
     for mention in doc.ents:
@@ -162,8 +164,6 @@ if __name__ == "__main__":
     except Exception:
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
-
-    SPACY = spacy.load("en_core_web_lg")
 
     # Spark setup with conf from command line
     sc = SparkContext()
