@@ -163,7 +163,7 @@ if __name__ == "__main__":
     except Exception:
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
-    SPACY = spacy.load("en_core_web_sm")
+    SPACY = spacy.load("en_core_web_md")
     # Spark setup with conf from command line
     sc = SparkContext()
     # split WARC
