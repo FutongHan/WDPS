@@ -102,6 +102,9 @@ def link_entity(name, label, candidates):
 
     if not candidates:
         return
+	
+	if label != "PERSON" and candidates[0][2] < 4:
+		return
 
     for candidate in candidates:
         if name.lower() == candidate[0].lower():

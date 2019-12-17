@@ -47,8 +47,8 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
-    --master local[16] \
-    --num-executors 16 \
+    --master local[8] \
+    --num-executors 8 \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
