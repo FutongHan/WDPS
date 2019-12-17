@@ -69,8 +69,9 @@ def named_entity_recognition(record):
         name = mention.text.rstrip().replace("'s", "").replace("´s", "")
         if(label in ["TIME", "DATE", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "EVENT"]):
             continue
-
-        yield key, name, label
+        
+        for split_result in name.split(", "):
+            yield key, split_result, label
 
 ##### ENTITY CANDIDATE GENERATION #####
 def generate_candidates(record):
@@ -105,8 +106,8 @@ def link_entity(name, label, candidates):
     for candidate in candidates:
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
-		elif label == "PERSON" and name.lower() in candidate[0].lower():
-			exact_matches.append(candidate)
+        elif label == "PERSON" and name.lower() in candidate[0].lower():
+            exact_matches.append(candidate)
     if not exact_matches:
         return
     for match in exact_matches:
