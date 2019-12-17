@@ -61,7 +61,7 @@ def html_to_text(record):
 ##### ENTITY RECOGNITION #####
 def named_entity_recognition(record):
     key, html = record
-    SPACY = spacy.load("en_core_web_md")
+
     doc = SPACY(html)
 
     for mention in doc.ents:
@@ -101,16 +101,14 @@ def link_entity(name, label, candidates):
 
     if not candidates:
         return
-    if label != "PERSON" and candidates[0][1] < 4:
-        return
-    if label == "PERSON" and candidates[0][1] < 1.5:
-        return
 
     for candidate in candidates:
         if name.lower() == candidate[0].lower():
             exact_matches.append(candidate)
+		elif label == "PERSON" and name.lower() in candidate[0].lower():
+			exact_matches.append(candidate)
     if not exact_matches:
-        return candidates[0]
+        return
     for match in exact_matches:
         freebaseID = match[2][1:].replace("/", ".")
         if(sparql_query(freebaseID, label)):
@@ -163,7 +161,7 @@ if __name__ == "__main__":
     except Exception:
         print('Usage: DOMAIN_ES, DOMAIN_TRIDENT')
         sys.exit(0)
-
+    SPACY = spacy.load("en_core_web_sm")
     # Spark setup with conf from command line
     sc = SparkContext()
     # split WARC

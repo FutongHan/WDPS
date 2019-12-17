@@ -7,7 +7,7 @@ export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
 export YARN_CONF_DIR=/cm/shared/package/hadoop/hadoop-2.7.6/etc/hadoop
 
-TIME=45:00
+TIME=30:00
 
 INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
 OUTPUT=${2:-"output"}
@@ -47,14 +47,8 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 ############################
 
 prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
-    --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-    --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-    --master local[8] \
-    --executor-memory 8G \
-    --driver-memory 8G \
-    --num-executors 8 \
-    --archives venv.zip#ENV \
+    --master local[16] \
+    --num-executors 16 \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
