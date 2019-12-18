@@ -50,7 +50,6 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
     --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-	--conf spark.yarn.nodemanager.resource.cpu-vcores 4 \
 	--conf spark.yarn.nodemanager.resource.memory-mb 4048 \
     --master yarn \
     --archives venv.zip#ENV \
