@@ -5,7 +5,8 @@ module load hadoop
 export SPARK_HOME=/home/wdps1911/spark
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
-export YARN_CONF_DIR=/cm/shared/package/hadoop/hadoop-2.7.6/etc/hadoop
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 TIME=30:00
 
@@ -50,9 +51,8 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
     --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-	--conf spark.yarn.nodemanager.resource.cpu-vcores=4 \
-	--conf spark.yarn.nodemanager.resource.memory-mb=4048 \
     --master yarn \
+	--deploy-mode cluster \
     --archives venv.zip#ENV \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
