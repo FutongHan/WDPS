@@ -8,6 +8,8 @@ export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
+echo $YARN_CONF_DIR
+
 TIME=30:00
 
 INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
