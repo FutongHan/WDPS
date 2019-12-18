@@ -8,9 +8,7 @@ export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
-echo $YARN_CONF_DIR
-
-TIME=30:00
+TIME=60:00
 
 INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
 OUTPUT=${2:-"output"}
@@ -49,7 +47,7 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # Start Spark and the Entity Recognition + Entity Linking process
 ############################
 
-	$SPARK_HOME/bin/spark-submit \
+PYSPARK_PYTHON=$(readlink -f $(which python)) /home/bbkruit/spark-2.4.0-bin-hadoop2.7/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
     --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
     --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
