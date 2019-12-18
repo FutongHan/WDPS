@@ -167,7 +167,9 @@ if __name__ == "__main__":
         sys.exit(0)
     SPACY = spacy.load("en_core_web_sm")
     # Spark setup with conf from command line
-    sc = SparkContext()
+    # sc = SparkContext()
+    
+    sc = SparkContext("yarn", "wdps1911")
     # split WARC
     config = {"textinputformat.record.delimiter": "WARC/1.0"}
 
