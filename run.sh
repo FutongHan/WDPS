@@ -8,10 +8,6 @@ export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
-export SPARK_HADOOP_VERSION=2.4.0
-export SPARK_YARN=true
-
-
 TIME=60:00
 
 INPUT=${1:-"hdfs:///user/bbkruit/sample.warc.gz"}
@@ -51,13 +47,9 @@ echo "Trident should be running now on node $KB_NODE:$KB_PORT (connected to proc
 # Start Spark and the Entity Recognition + Entity Linking process
 ############################
 
-PYSPARK_PYTHON=$(readlink -f $(which python)) /home/bbkruit/spark-2.4.0-bin-hadoop2.7/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/bin/python3 \
-    --conf spark.executorEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-    --conf spark.yarn.appMasterEnv.LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-    --master yarn \
-	--deploy-mode cluster \
-    --archives venv.zip#ENV \
+	prun -np 1 -t $TIME $SPARK_HOME/bin/spark-submit \
+    --master local[8] \
+    --num-executors 8 \
     run.py $ES_NODE:$ES_PORT $KB_NODE:$KB_PORT $INPUT $OUTPUT
 
 hdfs dfs -copyToLocal $OUTPUT $OUTPUT
