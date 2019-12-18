@@ -2,11 +2,15 @@
 source .env/bin/activate
 module load prun
 module load hadoop
-export SPARK_HOME=/home/wdps1911/spark
+export SPARK_HOME=/home/bbkruit/spark-2.4.0-bin-hadoop2.7
 export SPARK_LOCAL_DIRS=/home/wdps1911/tmp
 export PYSPARK_PYTHON=/home/wdps1911/WDPS2019/.env/bin/python3
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
+
+export SPARK_HADOOP_VERSION=2.4.0
+export SPARK_YARN=true
+
 
 TIME=60:00
 
