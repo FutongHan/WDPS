@@ -21,7 +21,7 @@ def record_to_html(record):
     if not html:
         return
 
-    # Get the key for the output
+    # key for the output
     key = ''
     for line in record.splitlines():
         if line.startswith("WARC-TREC-ID"):
@@ -38,13 +38,10 @@ def html_to_text(record):
 
     useless_tags = ['footer', 'header', 'sidebar', 'sidebar-right', 'sidebar-left', 'sidebar-wrapper', 'wrapwidget', 'widget']
     soup = BeautifulSoup(html, "html.parser")
-    # remove tags: <script> <style> <code> <title> <head>
     [s.extract() for s in soup(['script', 'style', 'code', 'title', 'head', 'footer', 'header'])]
-    # remove tags id= useless_tags
     [s.extract() for s in soup.find_all(id=useless_tags)]
-    # remove tags class = useless_tags
     [s.extract() for s in soup.find_all(name='div', attrs={"class": useless_tags})]
-    # remove comments
+
     for element in soup(s=lambda s: isinstance(s, Comment)):
         element.extract()
 
