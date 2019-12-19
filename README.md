@@ -21,10 +21,11 @@ This project is to perform Entity Linking on a collection of web pages. The meth
 4. Entity Linking:
 	Link the entity mention to the candidate entity. Return the result in the format: document IDs + '\t' + entity surface form + '\t' + Freebase entity ID
   
-To ensure scalability, we use Apache Spark. A virtual environmedddnt is set up that contains the dependencies.
+To ensure scalability, we use Apache Spark. A virtual environment is set up that contains the dependencies.
 
 Run:
 sh run.sh INPUT OUTPUT
 
-Care: the output directory will be deleted if it exists
 Default is INPUT="hdfs:///user/bbkruit/sample.warc.gz" and OUTPUT="output"
+
+Care: the output directory will be deleted if it exists
