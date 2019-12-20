@@ -29,3 +29,15 @@ sh run.sh INPUT OUTPUT
 Default is INPUT="hdfs:///user/bbkruit/sample.warc.gz" and OUTPUT="output"
 
 Care: the output directory will be deleted if it exists
+
+We have these dependencies:
+
+Spacy (en_core_web_sm)
+BeautifulSoup, Comment
+SparkContext
+
+install with:
+pip install -U spacy
+python -m spacy download en_core_web_sm
+pip install bs4
+pip install pyspark
