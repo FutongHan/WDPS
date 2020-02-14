@@ -41,3 +41,4 @@ pip install -U spacy
 python -m spacy download en_core_web_sm
 pip install bs4
 pip install pyspark
+pip install Beautifulsoup
