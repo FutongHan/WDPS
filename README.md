@@ -43,6 +43,3 @@ python -m spacy download en_core_web_sm
 pip install bs4
 pip install pyspark
 pip install Beautifulsoup
-=======
-# WDPS
->>>>>>> 6593c9ddb7ae26b434b6d9578f73d359f8df189d
